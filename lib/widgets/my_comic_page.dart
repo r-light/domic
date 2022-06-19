@@ -29,9 +29,8 @@ class MyComicPage extends StatelessWidget {
           actions: [
             // search
             IconButton(
-              onPressed: () {
-                Navigator.pushNamed(context, Routes.myComicSearchPageRoute);
-              },
+              onPressed: () =>
+                  Navigator.pushNamed(context, Routes.myComicSearchPageRoute),
               icon: const Icon(Icons.search),
             ),
             // setting
@@ -41,9 +40,7 @@ class MyComicPage extends StatelessWidget {
             builder: (context) {
               return IconButton(
                 icon: const Icon(Icons.list, color: Colors.white),
-                onPressed: () {
-                  Scaffold.of(context).openDrawer();
-                },
+                onPressed: () => Scaffold.of(context).openDrawer(),
               );
             },
           ),
@@ -89,10 +86,8 @@ class MyComicLayoutState extends State<MyComicLayout>
   void initState() {
     super.initState();
     if (widget.tabIndex == 0) return;
-    checkUpdate().then((shouldUpdate) {
-      Provider.of<ComicLocal>(context, listen: false)
-          .moveToFirstFromFavorite(shouldUpdate);
-    });
+    Provider.of<ComicLocal>(context, listen: false)
+        .moveToFirstFromFavorite(Global.shouldUpdate);
   }
 
   @override
@@ -175,30 +170,40 @@ class MyComicLayoutState extends State<MyComicLayout>
     );
   }
 
-  Future<List<ComicSimple>> checkUpdate() async {
+  Future<List<ComicSimple>> checkUpdate() {
     isLoading = true;
     List<ComicSimple> shouldUpdate = [];
     var favorite = Provider.of<ComicLocal>(context, listen: false).favorite;
-    int i = 0;
+    var futures = <Future<ComicInfo>>[];
+    List<ComicInfo?> before = [];
     for (var entry in favorite.entries) {
       var record = entry.value;
       String source = record.source;
       String id = record.id;
       var lazyBoxName = ConstantString.sourceToLazyBox[source]!;
       var key = Global.comicInfoKey(source, id);
-      ComicInfo? before = Hive.box(ConstantString.comicBox).get(key);
+      before.add(Hive.box(ConstantString.comicBox).get(key));
       var parser = comicMethod[source] ?? comic18Method[source]!;
-      var info = await parser.comicById(id);
-      MyHive().putInHive(lazyBoxName, key, info);
-      if (before == null || before.chapters.length != info.chapters.length) {
-        isUpdated[i] = true;
-        shouldUpdate.add(record);
-      }
-      Hive.box(ConstantString.comicBox).put(key, info);
-      i++;
+      futures.add(parser.comicById(id).then((comicInfo) {
+        MyHive().putInHive(lazyBoxName, key, comicInfo);
+        Hive.box(ConstantString.comicBox).put(key, comicInfo);
+        return comicInfo;
+      }));
     }
-    isLoading = false;
-    return shouldUpdate;
+    int i = 0;
+    return Future.wait(futures).then((comicInfos) {
+      i = 0;
+      for (var entry in favorite.entries) {
+        var record = entry.value;
+        if (before[i]?.chapters.length != comicInfos[i].chapters.length) {
+          isUpdated[i] = true;
+          shouldUpdate.add(record);
+          i++;
+        }
+      }
+      isLoading = false;
+      return shouldUpdate;
+    });
   }
 
   Widget getUpdateBox(int index) {

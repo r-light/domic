@@ -198,13 +198,14 @@ class _MyReadSettingState extends State<MyReadSetting> {
             children: [const Text("修改阅读方向"), readerDirWidget()],
           ),
         ),
-        ListTile(
-          minVerticalPadding: 4,
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [const Text("阅读时显示时间"), readerTimeWidget()],
-          ),
-        )
+        // 阅读时显示时间
+        // ListTile(
+        //   minVerticalPadding: 4,
+        //   title: Row(
+        //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //     children: [const Text("阅读时显示时间"), readerTimeWidget()],
+        //   ),
+        // )
       ],
     );
   }

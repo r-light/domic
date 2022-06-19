@@ -166,7 +166,7 @@ class _ScrollReaderState extends State<ScrollReader> {
                 ReaderDirection.rightToLeft
             ? true
             : false;
-    var cachedNum = widget.content["source"] == ConstantString.jmtt ? 1 : 3;
+    var cachedNum = widget.content["source"] == ConstantString.jmtt ? 2 : 5;
     // var showTimeInReader =
     //     context.select((Configs configs) => configs.showTimeInReader);
     return Stack(

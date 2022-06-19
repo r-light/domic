@@ -10,7 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 class Global {
   const Global._();
   static late final String defaultCover;
-
+  static late final List<ComicSimple> shouldUpdate;
   static String comicSimpleKey(ComicSimple item) {
     return item.id + item.source;
   }

@@ -15,6 +15,7 @@
 - [ ] 修改阅读模式
 - [ ] 添加更多图源
 - [ ] 优化滚动逻辑
+- [x] 首页卡顿
 
 ## 致谢
 
@@ -31,3 +32,5 @@
 - [M1 设备的 Xcode 编译问题深究](https://www.jianshu.com/p/7e9acc13cbbd)
 - [ListView disposes and recreates the State & RenderObject of all children (identified by ValueKey) when the item order changes](https://github.com/flutter/flutter/issues/21023)
 - [Sqflite guide](https://github.com/tekartik/sqflite/blob/master/sqflite/doc/how_to.md)
+- [Dartlang wait more than one future](https://stackoverflow.com/questions/42176092/dartlang-wait-more-than-one-future)
+- [Flutter 中的异步](https://juejin.cn/post/6987637272375984165#heading-6)
