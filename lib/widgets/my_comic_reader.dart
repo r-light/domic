@@ -103,7 +103,6 @@ class _ScrollReaderState extends State<ScrollReader> {
   void initState() {
     // _controller.addListener(_onScroll);
     super.initState();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
 
     _isLoading = true;
     _hasMore = true;
@@ -168,8 +167,8 @@ class _ScrollReaderState extends State<ScrollReader> {
             ? true
             : false;
     var cachedNum = widget.content["source"] == ConstantString.jmtt ? 1 : 3;
-    var showTimeInReader =
-        context.select((Configs configs) => configs.showTimeInReader);
+    // var showTimeInReader =
+    //     context.select((Configs configs) => configs.showTimeInReader);
     return Stack(
       alignment: AlignmentDirectional.topEnd,
       children: [
@@ -212,16 +211,16 @@ class _ScrollReaderState extends State<ScrollReader> {
           },
           itemCount: _hasMore ? imageInfos.length + 1 : imageInfos.length,
         ),
-        showTimeInReader
-            ? Positioned(
-                top: 5,
-                right: 20,
-                child: Text(
-                  DateFormat.Hm().format(DateTime.now()),
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                ),
-              )
-            : Container(),
+        // showTimeInReader
+        //     ? Positioned(
+        //         top: 5,
+        //         right: 20,
+        //         child: DefaultTextStyle(
+        //           style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+        //           child: Text(DateFormat.Hm().format(DateTime.now())),
+        //         ),
+        //       )
+        //     : Container(),
       ],
     );
   }
