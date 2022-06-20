@@ -308,6 +308,7 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
         return OutlinedButton(
             onPressed: () {
               _index = index;
+              saveIndex(record);
               var cloned = ComicInfo.fromJson(
                   jsonDecode(jsonEncode(snapshot.requireData)));
               cloned.chapters = seqList;

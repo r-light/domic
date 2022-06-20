@@ -118,12 +118,15 @@ class _ScrollReaderState extends State<ScrollReader> {
 
   void loadNextEpisode() async {
     _isLoading = true;
-    Hive.box(ConstantString.comicBox).put(
-        Global.indexKey(widget.content["comicSimple"]),
-        widget.content["reversedIndex"]);
     if (widget.content["reversed"]) {
-      widget.content["reversedIndex"]++;
+      Hive.box(ConstantString.comicBox).put(
+          Global.indexKey(widget.content["comicSimple"]),
+          widget.content["index"]);
+      widget.content["index"]++;
     } else {
+      Hive.box(ConstantString.comicBox).put(
+          Global.indexKey(widget.content["comicSimple"]),
+          widget.content["reversedIndex"]);
       widget.content["reversedIndex"]--;
     }
     ComicInfo comicInfo = widget.content["comicInfo"];
