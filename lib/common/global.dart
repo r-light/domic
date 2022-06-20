@@ -11,6 +11,8 @@ class Global {
   const Global._();
   static late final String defaultCover;
   static late final List<ComicSimple> shouldUpdate;
+  static late final List<bool> notLatest;
+
   static String comicSimpleKey(ComicSimple item) {
     return item.id + item.source;
   }

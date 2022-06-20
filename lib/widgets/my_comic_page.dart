@@ -75,8 +75,8 @@ class MyComicLayout extends StatefulWidget {
 class MyComicLayoutState extends State<MyComicLayout>
     with AutomaticKeepAliveClientMixin {
   static const updateSize = Size(10, 10);
-  late List<bool> isUpdated;
-  bool isLoading = true;
+  late List<bool> isUpdated = Global.notLatest;
+  bool isLoading = false;
   // final double padding = 5;
   // final int crossAxisCount = 3;
   // final double titleFontSize = 12;
@@ -190,9 +190,8 @@ class MyComicLayoutState extends State<MyComicLayout>
         return comicInfo;
       }));
     }
-    int i = 0;
     return Future.wait(futures).then((comicInfos) {
-      i = 0;
+      int i = 0;
       for (var entry in favorite.entries) {
         var record = entry.value;
         if (before[i]?.chapters.length != comicInfos[i].chapters.length) {

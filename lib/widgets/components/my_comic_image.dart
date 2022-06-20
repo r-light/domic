@@ -9,8 +9,61 @@ import 'package:domic/comic/extractors/dto.dart';
 import 'package:domic/common/common.dart';
 import 'package:domic/common/hive.dart';
 import 'package:domic/widgets/components/my_status.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide ImageInfo;
 import 'package:image/image.dart' as image_tool;
+
+Map<String, dynamic> convertJmttHelper(Map<String, dynamic> params) {
+  // ignore: prefer_function_declarations_over_variables
+  var func = (int aid, String pid) {
+    int a = 10;
+    if (aid >= 268850) {
+      var m = md5.convert(utf8.encode(aid.toString() + pid)).toString();
+      var hash = m.codeUnitAt(m.length - 1);
+      hash %= 10;
+      return (hash + 1) * 2;
+    }
+    return a;
+  };
+
+  Map<String, dynamic> map = {};
+  var bytes = params["bytes"];
+  image_tool.Image? rawImg;
+  var src = params["src"];
+  if (src.endsWith("jpg")) {
+    rawImg = image_tool.decodeJpg(bytes);
+  } else if (src.endsWith("png")) {
+    rawImg = image_tool.decodePng(bytes);
+  } else {
+    rawImg = image_tool.decodeImage(bytes);
+  }
+  if (rawImg == null) return map..putIfAbsent("data", () => Uint8List(0));
+  var height = rawImg.height, width = rawImg.width;
+  map["height"] = height;
+  map["width"] = width;
+  var target = image_tool.Image(width, height);
+  var s = func(params["aid"]!, params["pid"]!.split(".").first);
+  var left = height % s;
+  for (int m = 0; m < s; m++) {
+    var c = height ~/ s, g = c * m, h = height - c * (m + 1) - left;
+    if (m == 0) {
+      c += left;
+    } else {
+      g += left;
+    }
+    image_tool.drawImage(target, rawImg,
+        dstX: 0,
+        dstY: g,
+        dstW: width,
+        dstH: c,
+        srcX: 0,
+        srcY: h,
+        srcH: c,
+        srcW: width);
+  }
+  var res = image_tool.encodeJpg(target, quality: 90);
+  return map..putIfAbsent("data", () => res);
+}
 
 Widget waiting(double? width, double? height) {
   return SizedBox(width: width, height: height, child: const MyWaiting());
@@ -86,43 +139,16 @@ class _MyJmttComicImageState extends State<MyJmttComicImage>
           options: Options(responseType: ResponseType.bytes));
       var bytes = resp.data;
       if (bytes == null) return Uint8List(0);
-      image_tool.Image? rawImg;
-      if (widget.imageInfo.src.endsWith("jpg")) {
-        rawImg = image_tool.decodeJpg(bytes);
-      } else if (widget.imageInfo.src.endsWith("png")) {
-        rawImg = image_tool.decodePng(bytes);
-      } else {
-        rawImg = image_tool.decodeImage(bytes);
-      }
-      if (rawImg == null) return Uint8List(0);
-
-      var height = rawImg.height, width = rawImg.width;
-      widget.imageInfo.height = height;
-      widget.imageInfo.width = width;
-      var target = image_tool.Image(width, height);
-      var s =
-          getScrambleNum(widget.aid!, widget.imageInfo.pid!.split(".").first);
-      var left = height % s;
-      for (int m = 0; m < s; m++) {
-        var c = height ~/ s, g = c * m, h = height - c * (m + 1) - left;
-        if (m == 0) {
-          c += left;
-        } else {
-          g += left;
-        }
-        image_tool.drawImage(target, rawImg,
-            dstX: 0,
-            dstY: g,
-            dstW: width,
-            dstH: c,
-            srcX: 0,
-            srcY: h,
-            srcH: c,
-            srcW: width);
-      }
-      var res = image_tool.encodeJpg(target, quality: 90);
-      MyHive().putInHive(lazyBoxName, key, res);
-      return res as Uint8List;
+      Map<String, dynamic> params = {};
+      params["src"] = widget.imageInfo.src;
+      params["bytes"] = bytes;
+      params["aid"] = widget.aid!;
+      params["pid"] = widget.imageInfo.pid!;
+      var res = await compute(convertJmttHelper, params);
+      widget.imageInfo.height = res["height"];
+      widget.imageInfo.width = res["width"];
+      MyHive().putInHive(lazyBoxName, key, res["data"]);
+      return res["data"];
     }
   }
 

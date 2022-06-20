@@ -44,7 +44,7 @@ class _MyComicSearchResultState extends State<MyComicSearchResult> {
         .toList()
       ..addAll(
           Provider.of<ComicSource>(context, listen: false).source18Map.entries);
-    var futures = <Future<ComicPageData>>[];
+    var futures = <Future>[];
     for (var e in entries) {
       if (e.value) {
         var source = e.key;
@@ -54,8 +54,7 @@ class _MyComicSearchResultState extends State<MyComicSearchResult> {
         var key = comicSimplePageKey(source, text, currentPage);
         if (MyHive()
             .isInHive(lazyBoxName, key, dur: const Duration(hours: 12))) {
-          futures.add(
-              MyHive().getInHive(lazyBoxName, key) as Future<ComicPageData>);
+          futures.add(MyHive().getInHive(lazyBoxName, key));
         } else {
           var parser = comicMethod[source] ?? comic18Method[source]!;
           futures.add(parser.comicByName(text, currentPage).then((pager) {
@@ -74,8 +73,8 @@ class _MyComicSearchResultState extends State<MyComicSearchResult> {
         records.addAll(page.records);
         maxPage = max(maxPage, maxPageMap[page.records.first.source]!);
         if (currentPage == 1) {
-          totalNum +=
-              maxPageMap[page.records.first.source]! * page.records.length;
+          totalNum += maxPageMap[page.records.first.source]! *
+              (page.records.length as int);
         }
       }
     }).then((value) => setState(() {
@@ -175,8 +174,7 @@ class _MyComicSearchResultState extends State<MyComicSearchResult> {
                   )),
             );
           },
-          separatorBuilder: (context, index) => Divider(
-                color: Colors.grey.shade100,
+          separatorBuilder: (context, index) => const Divider(
                 thickness: 4,
               ),
           itemCount: hasMore ? records.length + 1 : records.length);

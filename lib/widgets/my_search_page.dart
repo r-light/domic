@@ -96,22 +96,18 @@ class MyComicSearchPageState extends State<MyComicSearchPage> {
                 padding: const EdgeInsets.fromLTRB(0, 0, 10, 5),
                 decoration: dec,
                 alignment: Alignment.centerRight,
-                child: CircleAvatar(
-                  radius: height + 10,
-                  backgroundColor: Colors.blue[700],
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.search,
-                      color: Colors.white,
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).pushNamed(
-                          Routes.myComicSearchResultRoute,
-                          arguments: _searchInfo);
-                    },
+                child: FloatingActionButton(
+                  onPressed: () {
+                    Navigator.of(context).pushNamed(
+                        Routes.myComicSearchResultRoute,
+                        arguments: _searchInfo);
+                  },
+                  child: const Icon(
+                    Icons.search,
+                    color: Colors.white,
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ));
