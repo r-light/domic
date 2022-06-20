@@ -111,7 +111,6 @@ Future<List<ComicSimple>> checkUpdate() {
   var favorite = LinkedHashMap<String, ComicSimple>.from(
       Hive.box(ConstantString.comicBox).get('savedFavorite') ??
           <String, ComicSimple>{});
-  Global.notLatest = List.filled(favorite.length, false);
   for (var entry in favorite.entries) {
     var record = entry.value;
     String source = record.source;
@@ -133,7 +132,6 @@ Future<List<ComicSimple>> checkUpdate() {
       var record = entry.value;
       if (before[i]?.chapters.length != comicInfos[i].chapters.length) {
         shouldUpdate.add(record);
-        Global.notLatest[i] = true;
         i++;
       }
     }

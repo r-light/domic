@@ -6,16 +6,20 @@ import 'package:provider/provider.dart';
 
 class MyGridGestureDetector extends StatelessWidget {
   const MyGridGestureDetector(
-      {Key? key, required this.child, required this.record})
+      {Key? key, required this.child, required this.record, this.setterLatest})
       : super(key: key);
   final Widget? child;
   final ComicSimple record;
+  final dynamic setterLatest;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
+        if (setterLatest != null) {
+          setterLatest(record, value: true);
+        }
         Navigator.pushNamed(context, Routes.myComicInfoRoute, arguments: {
           "record": record,
         });

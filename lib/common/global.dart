@@ -11,7 +11,6 @@ class Global {
   const Global._();
   static late final String defaultCover;
   static late final List<ComicSimple> shouldUpdate;
-  static late final List<bool> notLatest;
 
   static String comicSimpleKey(ComicSimple item) {
     return item.id + item.source;
@@ -29,12 +28,20 @@ class Global {
     return "${Global.comicSimpleKey(record)}reversed";
   }
 
+  static String latestKey(ComicSimple record) {
+    return "${Global.comicSimpleKey(record)}latest";
+  }
+
   static void removeIndex(ComicSimple record) {
     Hive.box(ConstantString.comicBox).delete(indexKey(record));
   }
 
   static void removeReversed(ComicSimple record) {
     Hive.box(ConstantString.comicBox).delete(reversedKey(record));
+  }
+
+  static void removeLatest(ComicSimple record) {
+    Hive.box(ConstantString.comicBox).delete(latestKey(record));
   }
 
   static void removeComicInfo(ComicSimple record) {
@@ -61,6 +68,7 @@ class Global {
     removeIndex(record);
     removeReversed(record);
     removeComicInfo(record);
+    removeLatest(record);
   }
 
   static void openUrl(String url) async {
@@ -76,6 +84,7 @@ class ComicLocal with ChangeNotifier {
   static const historyKey = "savedHistory";
   static const favoriteKey = "savedFavorite";
   static const historyLimitKey = "historyLimit";
+  static const latestKey = "comicSimpleLatestKey";
 
   late LinkedHashMap<String, ComicSimple> history;
   late LinkedHashMap<String, ComicSimple> favorite;
@@ -179,12 +188,17 @@ class ComicLocal with ChangeNotifier {
 
   void moveToFirstFromFavorite(List<ComicSimple> items) {
     if (items.isEmpty) return;
+    LinkedHashMap<String, ComicSimple> other = LinkedHashMap();
     for (var item in items) {
       var key = Global.comicSimpleKey(item);
+      other[key] = item;
       favorite.remove(key);
-      favorite[key] = item;
+      box.put(Global.latestKey(item), false);
     }
+    other.addAll(favorite);
+    favorite = other;
     notifyListeners();
+    box.put(favoriteKey, favorite);
   }
 }
 

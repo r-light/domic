@@ -75,8 +75,8 @@ class MyComicLayout extends StatefulWidget {
 class MyComicLayoutState extends State<MyComicLayout>
     with AutomaticKeepAliveClientMixin {
   static const updateSize = Size(10, 10);
-  late List<bool> isUpdated = Global.notLatest;
   bool isLoading = false;
+  late Box box = Hive.box(ConstantString.comicBox);
   // final double padding = 5;
   // final int crossAxisCount = 3;
   // final double titleFontSize = 12;
@@ -105,9 +105,6 @@ class MyComicLayoutState extends State<MyComicLayout>
         }
       case 1:
         {
-          isUpdated = List.filled(
-              Provider.of<ComicLocal>(context, listen: true).favorite.length,
-              false);
           return Stack(
             alignment: AlignmentDirectional.bottomEnd,
             children: [
@@ -144,6 +141,10 @@ class MyComicLayoutState extends State<MyComicLayout>
     }
   }
 
+  void onTap(ComicSimple item, {bool value = false}) {
+    box.put(Global.latestKey(item), value);
+  }
+
   Widget getGridView(List<ComicSimple> records) {
     return GridView.builder(
       padding: const EdgeInsets.all(5.0),
@@ -159,12 +160,13 @@ class MyComicLayoutState extends State<MyComicLayout>
         return Stack(alignment: AlignmentDirectional.bottomEnd, children: [
           MyGridGestureDetector(
             record: record,
+            setterLatest: onTap,
             child: ComicSimpleItem(
               comicSimple: record,
               isList: false,
             ),
           ),
-          getUpdateBox(index),
+          getUpdateBox(records, index),
         ]);
       },
     );
@@ -195,7 +197,6 @@ class MyComicLayoutState extends State<MyComicLayout>
       for (var entry in favorite.entries) {
         var record = entry.value;
         if (before[i]?.chapters.length != comicInfos[i].chapters.length) {
-          isUpdated[i] = true;
           shouldUpdate.add(record);
           i++;
         }
@@ -205,9 +206,9 @@ class MyComicLayoutState extends State<MyComicLayout>
     });
   }
 
-  Widget getUpdateBox(int index) {
+  Widget getUpdateBox(List<ComicSimple> records, int index) {
     if (widget.tabIndex == 0) return Container();
-    return isUpdated[index]
+    return box.get(Global.latestKey(records[index])) == false
         ? Container(
             height: updateSize.height,
             width: updateSize.width,
