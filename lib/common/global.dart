@@ -10,7 +10,6 @@ import 'package:url_launcher/url_launcher.dart';
 class Global {
   const Global._();
   static late final String defaultCover;
-  static late final List<ComicSimple> shouldUpdate;
 
   static String comicSimpleKey(ComicSimple item) {
     return item.id + item.source;
@@ -259,7 +258,7 @@ class ComicSource with ChangeNotifier {
     source18Map = Map<String, bool>.from(box.get(sourceMap18Key) ?? {});
     if (sourceMap.length != comicMethod.length) {
       for (String source in comicMethod.keys) {
-        sourceMap.putIfAbsent(source, () => false);
+        sourceMap.putIfAbsent(source, () => true);
       }
       box.put(sourceMapKey, sourceMap);
     }

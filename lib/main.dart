@@ -34,7 +34,6 @@ void main() async {
   Hive.registerAdapter(ReaderDirectionAdapter());
   Hive.registerAdapter(ReaderTypeAdapter());
   await MyHive().init();
-  Global.shouldUpdate = await checkUpdate();
 
   var e = await MyDio().getHtml(RequestOptions(path: "http://www.pfmh.net/"));
   var doc = parse(e.value?.data.toString() ?? "");
@@ -102,39 +101,4 @@ class MyApp extends StatelessWidget {
       home: const MyComicPage(),
     );
   }
-}
-
-Future<List<ComicSimple>> checkUpdate() {
-  List<ComicSimple> shouldUpdate = [];
-  var futures = <Future<ComicInfo>>[];
-  List<ComicInfo?> before = [];
-  var favorite = LinkedHashMap<String, ComicSimple>.from(
-      Hive.box(ConstantString.comicBox).get('savedFavorite') ??
-          <String, ComicSimple>{});
-  for (var entry in favorite.entries) {
-    var record = entry.value;
-    String source = record.source;
-    String id = record.id;
-    var lazyBoxName = ConstantString.sourceToLazyBox[source]!;
-    var key = Global.comicInfoKey(source, id);
-    before.add(Hive.box(ConstantString.comicBox).get(key));
-    var parser = comicMethod[source] ?? comic18Method[source]!;
-    futures.add(parser.comicById(id).then((comicInfo) {
-      MyHive().putInHive(lazyBoxName, key, comicInfo);
-      Hive.box(ConstantString.comicBox).put(key, comicInfo);
-      return comicInfo;
-    }));
-  }
-  int i = 0;
-  return Future.wait(futures).then((comicInfos) {
-    i = 0;
-    for (var entry in favorite.entries) {
-      var record = entry.value;
-      if (before[i]?.chapters.length != comicInfos[i].chapters.length) {
-        shouldUpdate.add(record);
-        i++;
-      }
-    }
-    return shouldUpdate;
-  });
 }

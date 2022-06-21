@@ -86,8 +86,10 @@ class MyComicLayoutState extends State<MyComicLayout>
   void initState() {
     super.initState();
     if (widget.tabIndex == 0) return;
-    Provider.of<ComicLocal>(context, listen: false)
-        .moveToFirstFromFavorite(Global.shouldUpdate);
+    checkUpdate().then((shouldUpdate) {
+      Provider.of<ComicLocal>(context, listen: false)
+          .moveToFirstFromFavorite(shouldUpdate);
+    });
   }
 
   @override
@@ -196,10 +198,11 @@ class MyComicLayoutState extends State<MyComicLayout>
       int i = 0;
       for (var entry in favorite.entries) {
         var record = entry.value;
-        if (before[i]?.chapters.length != comicInfos[i].chapters.length) {
+        if (before[i] != null &&
+            before[i]!.chapters.length != comicInfos[i].chapters.length) {
           shouldUpdate.add(record);
-          i++;
         }
+        i++;
       }
       isLoading = false;
       return shouldUpdate;
