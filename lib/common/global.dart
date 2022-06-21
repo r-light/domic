@@ -257,15 +257,15 @@ class ComicSource with ChangeNotifier {
     box = Hive.box(ConstantString.comicBox);
     sourceMap = Map<String, bool>.from(box.get(sourceMapKey) ?? {});
     source18Map = Map<String, bool>.from(box.get(sourceMap18Key) ?? {});
-    if (sourceMap.isEmpty) {
+    if (sourceMap.length != comicMethod.length) {
       for (String source in comicMethod.keys) {
-        sourceMap[source] = true;
+        sourceMap.putIfAbsent(source, () => false);
       }
       box.put(sourceMapKey, sourceMap);
     }
     if (source18Map.isEmpty) {
       for (String source in comic18Method.keys) {
-        source18Map[source] = false;
+        source18Map.putIfAbsent(source, () => false);
       }
       box.put(sourceMap18Key, source18Map);
     }

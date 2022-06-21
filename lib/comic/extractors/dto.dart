@@ -7,6 +7,8 @@ part 'dto.g.dart';
 const sourcesName = {
   "pufei": "扑飞漫画",
   "jmtt": "禁漫天堂",
+  "gufeng": "古风漫画",
+  "bainian": "百年漫画",
 };
 
 @HiveType(typeId: 1)
