@@ -110,6 +110,7 @@ class Gufeng extends Parser {
       var url = e.children.first.attributes["href"] ?? "";
       chapters.add(Chapter(title, url, 0, []));
     });
+    chapters = chapters.reversed.toList();
     var res = ComicInfo(id, title, thumb, updateDate, uploadDate, description,
         chapters, author);
     res.state = state;
