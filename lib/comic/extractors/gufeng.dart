@@ -102,6 +102,7 @@ class Gufeng extends Parser {
     var uploadDate = updateDate;
 
     var description = doc.querySelector(".book-intro>#intro-cut")?.text ?? "";
+    description = trimAllLF(description);
     List<Chapter> chapters = [];
 
     // parse chapter
