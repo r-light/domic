@@ -65,6 +65,7 @@ class MyComicSearchPageState extends State<MyComicSearchPage> {
                 decoration: dec,
                 padding: EdgeInsets.all(padding),
                 child: TextField(
+                    cursorColor: Colors.white,
                     scrollPadding: EdgeInsets.all(padding),
                     textAlignVertical: TextAlignVertical.bottom,
                     toolbarOptions: const ToolbarOptions(
