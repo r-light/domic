@@ -121,10 +121,12 @@ class MyComicLayoutState extends State<MyComicLayout>
           return Stack(
             alignment: AlignmentDirectional.bottomEnd,
             children: [
-              getGridView(Provider.of<ComicLocal>(context, listen: true)
-                  .favorite
-                  .values
-                  .toList()),
+              reorderableWidget(
+                  Provider.of<ComicLocal>(context, listen: true)
+                      .favorite
+                      .values
+                      .toList(),
+                  1),
               GestureDetector(
                 onTap: () {
                   if (isLoading) return;
@@ -153,10 +155,12 @@ class MyComicLayoutState extends State<MyComicLayout>
           return Stack(
             alignment: AlignmentDirectional.bottomEnd,
             children: [
-              getGridView(Provider.of<ComicLocal>(context, listen: true)
-                  .favorite18
-                  .values
-                  .toList()),
+              reorderableWidget(
+                  Provider.of<ComicLocal>(context, listen: true)
+                      .favorite18
+                      .values
+                      .toList(),
+                  2),
               GestureDetector(
                 onTap: () {
                   if (isLoading) return;
@@ -216,6 +220,54 @@ class MyComicLayoutState extends State<MyComicLayout>
         ]);
       },
     );
+  }
+
+  Widget reorderableWidget(List<ComicSimple> records, int index) {
+    return ReorderableGridView.builder(
+        padding: const EdgeInsets.all(5.0),
+        itemCount: records.length,
+        onReorder: (oldIndex, newIndex) {
+          if (index == 1) {
+            Provider.of<ComicLocal>(context, listen: false)
+                .swapFavoriteIndex(oldIndex, newIndex);
+          }
+          if (index == 2) {
+            Provider.of<ComicLocal>(context, listen: false)
+                .swapFavorite18Index(oldIndex, newIndex);
+          }
+        },
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          childAspectRatio: 4 / 5,
+          crossAxisSpacing: 5.0,
+          mainAxisSpacing: 5.0,
+        ),
+        itemBuilder: (context, index) {
+          ComicSimple record = records[index];
+          return MyGridGestureDetector(
+            key: ValueKey(Global.comicSimpleKey(record)),
+            record: record,
+            setterLatest: onTap,
+            child: ComicSimpleItem(
+              comicSimple: record,
+              isList: false,
+            ),
+          );
+          // return Stack(
+          //     key: ValueKey(Global.comicSimpleKey(record)),
+          //     alignment: AlignmentDirectional.bottomEnd,
+          //     children: [
+          //       MyGridGestureDetector(
+          //         record: record,
+          //         setterLatest: onTap,
+          //         child: ComicSimpleItem(
+          //           comicSimple: record,
+          //           isList: false,
+          //         ),
+          //       ),
+          //       getUpdateBox(records, index),
+          //     ]);
+        });
   }
 
   Future<List<ComicSimple>> checkUpdate(Map<String, ComicSimple> favorite) {

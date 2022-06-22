@@ -81,6 +81,13 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
         actions: [
           IconButton(
             icon: const Icon(
+              Icons.source,
+            ),
+            onPressed: () =>
+                Navigator.pushNamed(context, Routes.myComicSourceRoute),
+          ),
+          IconButton(
+            icon: const Icon(
               Icons.search,
               color: Colors.white,
             ),

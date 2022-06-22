@@ -244,6 +244,76 @@ class ComicLocal with ChangeNotifier {
     notifyListeners();
     box.put(favorite18Key, favorite18);
   }
+
+  void swapFavoriteIndex(int index1, int index2) {
+    if (index1 == index2) return;
+    MapEntry<String, ComicSimple>? e1, e2;
+    int i = 0;
+    for (var entry in favorite.entries) {
+      if (i == index1) {
+        e1 = entry;
+      }
+      if (i == index2) {
+        e2 = entry;
+      }
+      if (e1 != null && e2 != null) break;
+      i++;
+    }
+    i = 0;
+    LinkedHashMap<String, ComicSimple> other = LinkedHashMap();
+    for (var entry in favorite.entries) {
+      if (i == index1) {
+        other[e2!.key] = e2.value;
+        i++;
+        continue;
+      }
+      if (i == index2) {
+        other[e1!.key] = e1.value;
+        i++;
+        continue;
+      }
+      other[entry.key] = entry.value;
+      i++;
+    }
+    favorite = other;
+    notifyListeners();
+    box.put(favoriteKey, favorite);
+  }
+
+  void swapFavorite18Index(int index1, int index2) {
+    if (index1 == index2) return;
+    MapEntry<String, ComicSimple>? e1, e2;
+    int i = 0;
+    for (var entry in favorite18.entries) {
+      if (i == index1) {
+        e1 = entry;
+      }
+      if (i == index2) {
+        e2 = entry;
+      }
+      if (e1 != null && e2 != null) break;
+      i++;
+    }
+    i = 0;
+    LinkedHashMap<String, ComicSimple> other = LinkedHashMap();
+    for (var entry in favorite18.entries) {
+      if (i == index1) {
+        other[e2!.key] = e2.value;
+        i++;
+        continue;
+      }
+      if (i == index2) {
+        other[e1!.key] = e1.value;
+        i++;
+        continue;
+      }
+      other[entry.key] = entry.value;
+      i++;
+    }
+    favorite18 = other;
+    notifyListeners();
+    box.put(favorite18Key, favorite18);
+  }
 }
 
 class Configs with ChangeNotifier {
