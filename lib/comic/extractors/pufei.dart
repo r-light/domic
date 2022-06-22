@@ -143,9 +143,13 @@ class Pufei extends Parser {
     var content = resp.value?.data.toString() ?? "";
     var doc = parse(content);
     // parse page
+    var pager = doc.querySelectorAll("#pagerH>strong");
+
     var total =
-        int.tryParse(doc.querySelector("#pagerH>strong")?.text.trim() ?? "") ??
-            0;
+        pager.isNotEmpty ? int.tryParse(trimAllLF(pager[0].text)) ?? 0 : 0;
+    var perPage =
+        pager.length > 1 ? int.tryParse(trimAllLF(pager[1].text)) ?? 1 : 1;
+
     List<ComicSimple> list = [];
     doc.querySelector("#dmList")?.querySelectorAll("li").forEach((e) {
       var title = e.querySelector("dl>dt>a")?.text ?? "";
@@ -169,12 +173,8 @@ class Pufei extends Parser {
       list.add(ComicSimple(
           id, title, thumb, author, updateDate, source, sourceName));
     });
-    total = max(total, list.length);
-    return ComicPageData(
-        list.isEmpty
-            ? 1
-            : total ~/ list.length + (total % list.length == 0 ? 0 : 1),
-        list);
+    var maxPage = total ~/ perPage + (total % perPage == 0 ? 0 : 1);
+    return ComicPageData(maxPage, list);
   }
 
   String listHelper(var a, var c) {

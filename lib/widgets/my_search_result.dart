@@ -44,7 +44,7 @@ class _MyComicSearchResultState extends State<MyComicSearchResult> {
         .toList()
       ..addAll(
           Provider.of<ComicSource>(context, listen: false).source18Map.entries);
-    var futures = <Future>[];
+    var futures = <Future<ComicPageData>>[];
     for (var e in entries) {
       if (e.value) {
         var source = e.key;
@@ -54,7 +54,8 @@ class _MyComicSearchResultState extends State<MyComicSearchResult> {
         var key = comicSimplePageKey(source, text, currentPage);
         if (MyHive()
             .isInHive(lazyBoxName, key, dur: const Duration(hours: 12))) {
-          futures.add(MyHive().getInHive(lazyBoxName, key));
+          futures.add(
+              MyHive().getInHive(lazyBoxName, key) as Future<ComicPageData>);
         } else {
           var parser = comicMethod[source] ?? comic18Method[source]!;
           futures.add(parser.comicByName(text, currentPage).then((pager) {
@@ -64,27 +65,26 @@ class _MyComicSearchResultState extends State<MyComicSearchResult> {
         }
       }
     }
-
-    Future.wait(futures).then((pagers) {
-      for (var page in pagers) {
-        if (page.records.isEmpty) continue;
-        maxPageMap[page.records.first.source] =
-            max(maxPageMap[page.records.first.source]!, page.pageCount);
-        records.addAll(page.records);
-        maxPage = max(maxPage, maxPageMap[page.records.first.source]!);
-        if (currentPage == 1) {
-          totalNum += maxPageMap[page.records.first.source]! *
-              (page.records.length as int);
-        }
+    var pagers = await Future.wait(futures);
+    for (var page in pagers) {
+      if (page.records.isEmpty) continue;
+      maxPageMap[page.records.first.source] =
+          max(maxPageMap[page.records.first.source]!, page.pageCount);
+      records.addAll(page.records);
+      maxPage = max(maxPage, maxPageMap[page.records.first.source]!);
+      if (currentPage == 1) {
+        totalNum +=
+            maxPageMap[page.records.first.source]! * page.records.length;
       }
-    }).then((value) => setState(() {
-          isLoading = false;
-          currentPage++;
-          if (currentPage > maxPage) {
-            hasMore = false;
-            totalNum = records.length;
-          }
-        }));
+    }
+    setState(() {
+      isLoading = false;
+      currentPage++;
+      if (currentPage > maxPage) {
+        hasMore = false;
+        totalNum = records.length;
+      }
+    });
   }
 
   @override

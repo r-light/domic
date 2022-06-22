@@ -207,44 +207,50 @@ class Jmtt extends Parser {
     var doc = parse(content);
     List<ComicSimple> list = [];
     doc
-        .querySelector("div.row.m-0,div.col-xs-12.col-md-12.col-sm-12>div.row")
-        ?.children
-        .forEach((e) {
-      var id = e.querySelector("a")?.attributes["href"] ?? "";
-      var title = e.querySelector("span.video-title")?.text ?? "";
-      title = trimAllLF(title);
-      var thumb = e
-              .querySelector(".thumb-overlay")
-              ?.querySelector("img")
-              ?.attributes["data-original"] ??
-          "";
-      var updateDate = "";
-      var star = e.querySelector(".label-loveicon")?.text.trim() ?? "";
-      List<String> tags = [];
-      e.querySelector("div.tags")?.querySelectorAll(".tag").forEach((element) {
-        tags.add(element.text.trim());
-      });
-      List<String> categories = [];
-      e.querySelector(".category-icon")?.children.forEach((element) {
-        categories.add(element.text);
-      });
-      var source = "jmtt";
-      var sourceName = sourcesName["jmtt"] ?? "";
-      var author = e.querySelector("div.title-truncate")?.text ?? "";
-      author = trimAllLF(author);
-      var c =
-          ComicSimple(id, title, thumb, author, updateDate, source, sourceName);
-      c.tags = tags;
-      c.categories = categories;
-      c.star = star;
-      list.add(c);
+        .querySelectorAll(
+            "div.row.m-0,div.col-xs-12.col-md-12.col-sm-12>div.row")
+        .forEach((element) {
+      for (var e in element.children) {
+        var id = e.querySelector("a")?.attributes["href"] ?? "";
+        var title = e.querySelector("span.video-title")?.text ?? "";
+        title = trimAllLF(title);
+        var thumb = e
+                .querySelector(".thumb-overlay")
+                ?.querySelector("img")
+                ?.attributes["data-original"] ??
+            "";
+        var updateDate = "";
+        var star = e.querySelector(".label-loveicon")?.text.trim() ?? "";
+        List<String> tags = [];
+        e
+            .querySelector("div.tags")
+            ?.querySelectorAll(".tag")
+            .forEach((element) {
+          tags.add(element.text.trim());
+        });
+        List<String> categories = [];
+        e.querySelector(".category-icon")?.children.forEach((element) {
+          categories.add(element.text);
+        });
+        var source = "jmtt";
+        var sourceName = sourcesName["jmtt"] ?? "";
+        var author = e.querySelector("div.title-truncate")?.text ?? "";
+        author = trimAllLF(author);
+        var c = ComicSimple(
+            id, title, thumb, author, updateDate, source, sourceName);
+        c.tags = tags;
+        c.categories = categories;
+        c.star = star;
+        list.add(c);
+      }
     });
+
     // parse page
     var maxPage = 1;
     var pager = doc
         .querySelector(".col-xs-12.col-md-9.col-sm-8>.well.well-sm")
         ?.querySelectorAll(">.text-white");
-    if (pager != null && pager.length >= 4) {
+    if (page == 1 && pager != null && pager.length >= 4) {
       var from = int.tryParse(pager[1].text) ?? 0;
       var to = int.tryParse(pager[2].text) ?? 1;
       var total = int.tryParse(pager[3].text) ?? 1;

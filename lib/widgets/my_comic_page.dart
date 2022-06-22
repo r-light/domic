@@ -10,6 +10,7 @@ import 'package:domic/widgets/components/my_setting_action.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
+import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 
 class MyComicPage extends StatelessWidget {
   const MyComicPage({Key? key}) : super(key: key);
