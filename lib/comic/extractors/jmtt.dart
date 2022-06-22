@@ -81,6 +81,7 @@ class Jmtt extends Parser {
     var title =
         doc.querySelector(".panel-heading>[itemprop='name']")?.text.trim() ??
             "";
+    title = trimAllLF(title);
     var thumb = doc
             .querySelector("#album_photo_cover")
             ?.querySelector("img")
@@ -117,6 +118,7 @@ class Jmtt extends Parser {
     for (var element in authors) {
       author += element;
     }
+    author = trimAllLF(author);
     var updateDate = "", uploadDate = "", views = "", star = "";
 
     doc.querySelectorAll("#album_photo_cover>div").last.children.forEach((s) {
@@ -229,6 +231,7 @@ class Jmtt extends Parser {
       var source = "jmtt";
       var sourceName = sourcesName["jmtt"] ?? "";
       var author = e.querySelector("div.title-truncate")?.text ?? "";
+      author = trimAllLF(author);
       var c =
           ComicSimple(id, title, thumb, author, updateDate, source, sourceName);
       c.tags = tags;
