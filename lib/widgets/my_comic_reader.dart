@@ -74,6 +74,7 @@ class _ScrollReaderState extends State<ScrollReader> {
   late bool _hasMore;
   late int nextEp;
   final List<ImageInfo> imageInfos = [];
+  final List<Size> imageSizes = [];
   final List<MapEntry<int, int>> aidScrambleId = [];
 
   // void _onScroll() {
@@ -136,6 +137,7 @@ class _ScrollReaderState extends State<ScrollReader> {
       setState(() {
         for (var imageInfo in comicInfo.chapters[nextEp].images) {
           imageInfos.add(imageInfo);
+          imageSizes.add(const Size(0, 0));
           aidScrambleId.add(MapEntry(comicInfo.chapters[nextEp].aid ?? 0,
               comicInfo.chapters[nextEp].scrambleId ?? 0));
         }
@@ -162,8 +164,6 @@ class _ScrollReaderState extends State<ScrollReader> {
             ? true
             : false;
     var cachedNum = widget.content["source"] == ConstantString.jmtt ? 2 : 5;
-    // var showTimeInReader =
-    //     context.select((Configs configs) => configs.showTimeInReader);
     return Stack(
       alignment: AlignmentDirectional.topEnd,
       children: [
@@ -188,17 +188,19 @@ class _ScrollReaderState extends State<ScrollReader> {
                 aid: aidScrambleId[index].key,
                 scrambleId: aidScrambleId[index].value,
                 width: maxWidth,
+                height: getRealHeight(maxWidth, imageInfos[index].width,
+                    imageInfos[index].height),
                 statusWidth: maxWidth,
-                // height: axis == Axis.horizontal ? maxHeight : null,
                 statusHeight:
-                    axis == Axis.horizontal ? maxHeight : maxHeight / 5,
+                    axis == Axis.horizontal ? maxHeight : maxHeight / 3,
               );
             } else {
               return normalImageWidget(
-                imageInfos[index].src,
+                imageInfos[index],
                 width: maxWidth,
                 statusWidth: maxWidth,
-                // height: axis == Axis.horizontal ? maxHeight : null,
+                height: getRealHeight(maxWidth, imageInfos[index].width,
+                    imageInfos[index].height),
                 statusHeight:
                     axis == Axis.horizontal ? maxHeight : maxHeight / 5,
               );
@@ -206,17 +208,12 @@ class _ScrollReaderState extends State<ScrollReader> {
           },
           itemCount: _hasMore ? imageInfos.length + 1 : imageInfos.length,
         ),
-        // showTimeInReader
-        //     ? Positioned(
-        //         top: 5,
-        //         right: 20,
-        //         child: DefaultTextStyle(
-        //           style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-        //           child: Text(DateFormat.Hm().format(DateTime.now())),
-        //         ),
-        //       )
-        //     : Container(),
       ],
     );
+  }
+
+  double? getRealHeight(double maxWidth, int? width, int? height) {
+    if (width == null || height == null) return null;
+    return maxWidth / width * height;
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -81,20 +82,27 @@ Widget error(double? width, double? height) {
       ));
 }
 
-Widget normalImageWidget(String url,
+Widget normalImageWidget(ImageInfo info,
     {double? height,
     double? width,
     double? statusWidth,
     double? statusHeight}) {
-  return CachedNetworkImage(
-    imageUrl: url,
-    fadeInDuration: Duration.zero,
-    fadeOutDuration: Duration.zero,
+    // so far, statusWidth and statusHeight are not used.
+  Image image = Image(
+    image: CachedNetworkImageProvider(info.src),
     height: height,
     width: width,
-    placeholder: (context, url) => waiting(statusWidth, statusHeight),
-    errorWidget: (context, url, error) => Container(),
   );
+  image.image.resolve(const ImageConfiguration()).addListener(
+    ImageStreamListener(
+      (image, synchronousCall) {
+        var myImage = image.image;
+        info.width = myImage.width;
+        info.height = myImage.height;
+      },
+    ),
+  );
+  return image;
 }
 
 class MyJmttComicImage extends StatefulWidget {
@@ -158,7 +166,7 @@ class _MyJmttComicImageState extends State<MyJmttComicImage>
     // jmtt
     if (widget.source == ConstantString.jmtt) {
       if (widget.aid! < widget.scrambleId!) {
-        return normalImageWidget(widget.imageInfo.src,
+        return normalImageWidget(widget.imageInfo,
             width: widget.width,
             height: widget.height,
             statusWidth: widget.statusWidth,
@@ -182,7 +190,7 @@ class _MyJmttComicImageState extends State<MyJmttComicImage>
         },
       );
     } else {
-      return normalImageWidget(widget.imageInfo.src,
+      return normalImageWidget(widget.imageInfo,
           width: widget.width,
           height: widget.height,
           statusWidth: widget.statusWidth,
