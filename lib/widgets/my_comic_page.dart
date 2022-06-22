@@ -229,11 +229,11 @@ class MyComicLayoutState extends State<MyComicLayout>
         onReorder: (oldIndex, newIndex) {
           if (index == 1) {
             Provider.of<ComicLocal>(context, listen: false)
-                .swapFavoriteIndex(oldIndex, newIndex);
+                .insertFavoriteIndex(oldIndex, newIndex);
           }
           if (index == 2) {
             Provider.of<ComicLocal>(context, listen: false)
-                .swapFavorite18Index(oldIndex, newIndex);
+                .insertFavorite18Index(oldIndex, newIndex);
           }
         },
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -244,29 +244,20 @@ class MyComicLayoutState extends State<MyComicLayout>
         ),
         itemBuilder: (context, index) {
           ComicSimple record = records[index];
-          return MyGridGestureDetector(
-            key: ValueKey(Global.comicSimpleKey(record)),
-            record: record,
-            setterLatest: onTap,
-            child: ComicSimpleItem(
-              comicSimple: record,
-              isList: false,
-            ),
-          );
-          // return Stack(
-          //     key: ValueKey(Global.comicSimpleKey(record)),
-          //     alignment: AlignmentDirectional.bottomEnd,
-          //     children: [
-          //       MyGridGestureDetector(
-          //         record: record,
-          //         setterLatest: onTap,
-          //         child: ComicSimpleItem(
-          //           comicSimple: record,
-          //           isList: false,
-          //         ),
-          //       ),
-          //       getUpdateBox(records, index),
-          //     ]);
+          return Stack(
+              key: ValueKey(Global.comicSimpleKey(record)),
+              alignment: AlignmentDirectional.bottomEnd,
+              children: [
+                MyGridGestureDetector(
+                  record: record,
+                  setterLatest: onTap,
+                  child: ComicSimpleItem(
+                    comicSimple: record,
+                    isList: false,
+                  ),
+                ),
+                getUpdateBox(records, index),
+              ]);
         });
   }
 

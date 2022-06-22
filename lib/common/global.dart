@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:domic/comic/api.dart';
 import 'package:domic/comic/extractors/dto.dart';
@@ -245,72 +246,26 @@ class ComicLocal with ChangeNotifier {
     box.put(favorite18Key, favorite18);
   }
 
-  void swapFavoriteIndex(int index1, int index2) {
+  void insertFavoriteIndex(int index1, int index2) {
     if (index1 == index2) return;
-    MapEntry<String, ComicSimple>? e1, e2;
-    int i = 0;
-    for (var entry in favorite.entries) {
-      if (i == index1) {
-        e1 = entry;
-      }
-      if (i == index2) {
-        e2 = entry;
-      }
-      if (e1 != null && e2 != null) break;
-      i++;
-    }
-    i = 0;
-    LinkedHashMap<String, ComicSimple> other = LinkedHashMap();
-    for (var entry in favorite.entries) {
-      if (i == index1) {
-        other[e2!.key] = e2.value;
-        i++;
-        continue;
-      }
-      if (i == index2) {
-        other[e1!.key] = e1.value;
-        i++;
-        continue;
-      }
-      other[entry.key] = entry.value;
-      i++;
-    }
-    favorite = other;
+    List<MapEntry<String, ComicSimple>> entries = favorite.entries.toList();
+    var removed = entries.removeAt(index1);
+    entries.insert(index2, removed);
+
+    favorite.clear();
+    favorite.addEntries(entries);
     notifyListeners();
     box.put(favoriteKey, favorite);
   }
 
-  void swapFavorite18Index(int index1, int index2) {
+  void insertFavorite18Index(int index1, int index2) {
     if (index1 == index2) return;
-    MapEntry<String, ComicSimple>? e1, e2;
-    int i = 0;
-    for (var entry in favorite18.entries) {
-      if (i == index1) {
-        e1 = entry;
-      }
-      if (i == index2) {
-        e2 = entry;
-      }
-      if (e1 != null && e2 != null) break;
-      i++;
-    }
-    i = 0;
-    LinkedHashMap<String, ComicSimple> other = LinkedHashMap();
-    for (var entry in favorite18.entries) {
-      if (i == index1) {
-        other[e2!.key] = e2.value;
-        i++;
-        continue;
-      }
-      if (i == index2) {
-        other[e1!.key] = e1.value;
-        i++;
-        continue;
-      }
-      other[entry.key] = entry.value;
-      i++;
-    }
-    favorite18 = other;
+    List<MapEntry<String, ComicSimple>> entries = favorite18.entries.toList();
+    var removed = entries.removeAt(index1);
+    entries.insert(index2, removed);
+
+    favorite18.clear();
+    favorite18.addEntries(entries);
     notifyListeners();
     box.put(favorite18Key, favorite18);
   }
