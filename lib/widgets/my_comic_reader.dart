@@ -198,9 +198,9 @@ class _ScrollReaderState extends State<ScrollReader> {
               return normalImageWidget(
                 imageInfos[index],
                 width: maxWidth,
-                statusWidth: maxWidth,
                 height: getRealHeight(maxWidth, imageInfos[index].width,
                     imageInfos[index].height),
+                statusWidth: maxWidth,
                 statusHeight:
                     axis == Axis.horizontal ? maxHeight : maxHeight / 5,
               );

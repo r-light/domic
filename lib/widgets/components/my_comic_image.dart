@@ -87,22 +87,34 @@ Widget normalImageWidget(ImageInfo info,
     double? width,
     double? statusWidth,
     double? statusHeight}) {
-    // so far, statusWidth and statusHeight are not used.
-  Image image = Image(
-    image: CachedNetworkImageProvider(info.src),
+  return CachedNetworkImage(
+    imageUrl: info.src,
+    fadeInDuration: Duration.zero,
+    fadeOutDuration: Duration.zero,
+    imageBuilder: (
+      BuildContext context,
+      ImageProvider imageProvider,
+    ) {
+      imageProvider.resolve(const ImageConfiguration()).addListener(
+        ImageStreamListener(
+          (image, synchronousCall) {
+            var myImage = image.image;
+            info.width = myImage.width;
+            info.height = myImage.height;
+          },
+        ),
+      );
+      return Image(
+        image: imageProvider,
+        height: height,
+        width: width,
+      );
+    },
     height: height,
     width: width,
+    placeholder: (context, url) => waiting(statusWidth, statusHeight),
+    errorWidget: (context, url, error) => Container(),
   );
-  image.image.resolve(const ImageConfiguration()).addListener(
-    ImageStreamListener(
-      (image, synchronousCall) {
-        var myImage = image.image;
-        info.width = myImage.width;
-        info.height = myImage.height;
-      },
-    ),
-  );
-  return image;
 }
 
 class MyJmttComicImage extends StatefulWidget {
