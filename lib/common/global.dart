@@ -82,11 +82,13 @@ class ComicLocal with ChangeNotifier {
   static const defaultLimit = 100;
   static const historyKey = "savedHistory";
   static const favoriteKey = "savedFavorite";
+  static const favorite18Key = "savedFavorite18";
   static const historyLimitKey = "historyLimit";
   static const latestKey = "comicSimpleLatestKey";
 
   late LinkedHashMap<String, ComicSimple> history;
   late LinkedHashMap<String, ComicSimple> favorite;
+  late LinkedHashMap<String, ComicSimple> favorite18;
   late int _historyLimit;
   late Box box;
 
@@ -98,6 +100,9 @@ class ComicLocal with ChangeNotifier {
     // load favorite
     favorite = LinkedHashMap<String, ComicSimple>.from(
         box.get(favoriteKey) ?? <String, ComicSimple>{});
+    // load favorite18
+    favorite18 = LinkedHashMap<String, ComicSimple>.from(
+        box.get(favorite18Key) ?? <String, ComicSimple>{});
     // load limit
     _historyLimit = box.get(historyLimitKey) ?? 100;
   }
@@ -127,7 +132,7 @@ class ComicLocal with ChangeNotifier {
     if (history.length <= historyLimit) return;
     while (history.length > historyLimit) {
       String key = history.keys.first;
-      if (!favorite.containsKey(key)) {
+      if (!favorite.containsKey(key) && !favorite18.containsKey(key)) {
         Global.remove(history[key]!);
       }
       history.remove(key);
@@ -139,7 +144,8 @@ class ComicLocal with ChangeNotifier {
   Future removeAllHistory() async {
     if (history.isEmpty) return;
     for (var entry in history.entries) {
-      if (!favorite.containsKey(entry.key)) {
+      if (!favorite.containsKey(entry.key) &&
+          !favorite18.containsKey(entry.key)) {
         Global.remove(entry.value);
       }
     }
@@ -150,15 +156,20 @@ class ComicLocal with ChangeNotifier {
 
   bool isFavorite(ComicSimple item) {
     final key = Global.comicSimpleKey(item);
-    return favorite.containsKey(key);
+    return favorite.containsKey(key) || favorite18.containsKey(key);
   }
 
   Future saveFavorite(ComicSimple item) async {
     final key = Global.comicSimpleKey(item);
-    if (favorite.containsKey(key)) return;
-    favorite[key] = item;
+    if (favorite.containsKey(key) || favorite18.containsKey(key)) return;
+    if (comicMethod.containsKey(item.source)) {
+      favorite[key] = item;
+      box.put(favoriteKey, favorite);
+    } else {
+      favorite18[key] = item;
+      box.put(favorite18Key, favorite18);
+    }
     notifyListeners();
-    box.put(favoriteKey, favorite);
   }
 
   Future removeFavorite(ComicSimple item) async {
@@ -170,6 +181,13 @@ class ComicLocal with ChangeNotifier {
       favorite.remove(key);
       notifyListeners();
       box.put(favoriteKey, favorite);
+    } else if (favorite18.containsKey(key)) {
+      if (!history.containsKey(key)) {
+        Global.remove(favorite18[key]!);
+      }
+      favorite18.remove(key);
+      notifyListeners();
+      box.put(favorite18Key, favorite18);
     }
   }
 
@@ -185,6 +203,18 @@ class ComicLocal with ChangeNotifier {
     box.delete(favoriteKey);
   }
 
+  Future removeAllFavorite18() async {
+    if (favorite18.isEmpty) return;
+    for (var entry in favorite18.entries) {
+      if (!history.containsKey(entry.key)) {
+        Global.remove(entry.value);
+      }
+    }
+    favorite18.clear();
+    notifyListeners();
+    box.delete(favorite18Key);
+  }
+
   void moveToFirstFromFavorite(List<ComicSimple> items) {
     if (items.isEmpty) return;
     LinkedHashMap<String, ComicSimple> other = LinkedHashMap();
@@ -198,6 +228,21 @@ class ComicLocal with ChangeNotifier {
     favorite = other;
     notifyListeners();
     box.put(favoriteKey, favorite);
+  }
+
+  void moveToFirstFromFavorite18(List<ComicSimple> items) {
+    if (items.isEmpty) return;
+    LinkedHashMap<String, ComicSimple> other = LinkedHashMap();
+    for (var item in items) {
+      var key = Global.comicSimpleKey(item);
+      other[key] = item;
+      favorite18.remove(key);
+      box.put(Global.latestKey(item), false);
+    }
+    other.addAll(favorite18);
+    favorite18 = other;
+    notifyListeners();
+    box.put(favorite18Key, favorite18);
   }
 }
 

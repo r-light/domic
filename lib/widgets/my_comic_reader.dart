@@ -3,11 +3,8 @@ import 'package:domic/comic/extractors/dto.dart';
 import 'package:domic/common/global.dart';
 import 'package:domic/common/hive.dart';
 import 'package:domic/widgets/components/my_comic_image.dart';
-import 'package:domic/widgets/components/my_status.dart';
 import 'package:flutter/material.dart' hide ImageInfo;
-import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 // import 'package:image_pixels/image_pixels.dart';

@@ -1,8 +1,7 @@
-import 'package:domic/comic/extractors/dto.dart';
-
 class ConstantString {
   static const appName = "domic";
   static const favorite = "收藏";
+  static const favorite18 = "收藏";
   static const history = "历史";
   static const source = "图源";
   static const setting = "设置";
@@ -28,7 +27,12 @@ class ConstantString {
 
   static const boxName = [propertyBox, comicBox, timeBox];
 
-  static const lazyBoxName = [pufeiCacheBox, jmttCacheBox, gufengCacheBox, bainianCacheBox];
+  static const lazyBoxName = [
+    pufeiCacheBox,
+    jmttCacheBox,
+    gufengCacheBox,
+    bainianCacheBox
+  ];
 
   static const sourceToLazyBox = {
     pufei: pufeiCacheBox,

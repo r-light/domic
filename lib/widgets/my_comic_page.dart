@@ -13,7 +13,11 @@ import 'package:provider/provider.dart';
 
 class MyComicPage extends StatelessWidget {
   const MyComicPage({Key? key}) : super(key: key);
-  static const tabs = [ConstantString.history, ConstantString.favorite];
+  static const tabs = [
+    ConstantString.history,
+    ConstantString.favorite,
+    ConstantString.favorite18
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -87,8 +91,10 @@ class MyComicLayoutState extends State<MyComicLayout>
     super.initState();
     if (widget.tabIndex == 0) return;
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      if (Provider.of<Configs>(context, listen: false).autoRefresh) {
-        checkUpdate().then((shouldUpdate) {
+      if (widget.tabIndex == 1 &&
+          Provider.of<Configs>(context, listen: false).autoRefresh) {
+        checkUpdate(Provider.of<ComicLocal>(context, listen: false).favorite)
+            .then((shouldUpdate) {
           Provider.of<ComicLocal>(context, listen: false)
               .moveToFirstFromFavorite(shouldUpdate);
         });
@@ -121,9 +127,43 @@ class MyComicLayoutState extends State<MyComicLayout>
               GestureDetector(
                 onTap: () {
                   if (isLoading) return;
-                  checkUpdate().then((shouldUpdate) {
+                  checkUpdate(Provider.of<ComicLocal>(context, listen: false)
+                          .favorite)
+                      .then((shouldUpdate) {
                     Provider.of<ComicLocal>(context, listen: false)
                         .moveToFirstFromFavorite(shouldUpdate);
+                  });
+                },
+                child: AbsorbPointer(
+                    child: Container(
+                  padding: const EdgeInsets.only(right: 20, bottom: 20),
+                  child: FloatingActionButton(
+                    onPressed: () {},
+                    heroTag: null,
+                    child: const Icon(Icons.refresh),
+                  ),
+                )),
+              )
+            ],
+          );
+        }
+      case 2:
+        {
+          return Stack(
+            alignment: AlignmentDirectional.bottomEnd,
+            children: [
+              getGridView(Provider.of<ComicLocal>(context, listen: true)
+                  .favorite18
+                  .values
+                  .toList()),
+              GestureDetector(
+                onTap: () {
+                  if (isLoading) return;
+                  checkUpdate(Provider.of<ComicLocal>(context, listen: false)
+                          .favorite18)
+                      .then((shouldUpdate) {
+                    Provider.of<ComicLocal>(context, listen: false)
+                        .moveToFirstFromFavorite18(shouldUpdate);
                   });
                 },
                 child: AbsorbPointer(
@@ -177,11 +217,10 @@ class MyComicLayoutState extends State<MyComicLayout>
     );
   }
 
-  Future<List<ComicSimple>> checkUpdate() {
+  Future<List<ComicSimple>> checkUpdate(Map<String, ComicSimple> favorite) {
     _onLoading();
     isLoading = true;
     List<ComicSimple> shouldUpdate = [];
-    var favorite = Provider.of<ComicLocal>(context, listen: false).favorite;
     var futures = <Future<ComicInfo>>[];
     List<ComicInfo?> before = [];
     for (var entry in favorite.entries) {

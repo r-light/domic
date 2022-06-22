@@ -1,12 +1,9 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import 'package:domic/comic/extractors/dio.dart';
 import 'package:domic/comic/extractors/dto.dart';
 import 'package:domic/comic/extractors/parser_entity.dart';
 import 'package:domic/comic/extractors/utils.dart';
 import 'package:html/parser.dart';
-import 'package:image/image.dart';
 
 class Jmtt extends Parser {
   static Jmtt? _instance;
