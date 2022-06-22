@@ -30,7 +30,6 @@ class MyComicReader extends StatefulWidget {
 
 class _MyComicReaderState extends State<MyComicReader> {
   late ReaderType _readerType = ReaderType.scroll;
-  late ReaderDirection _readerDirection = ReaderDirection.topToBottom;
 
   @override
   Widget build(BuildContext context) {
@@ -42,12 +41,10 @@ class _MyComicReaderState extends State<MyComicReader> {
       case ReaderType.scroll:
         return ScrollReader(
           content: widget.content,
-          readerDirection: _readerDirection,
         );
       case ReaderType.album:
         return ScrollReader(
           content: widget.content,
-          readerDirection: _readerDirection,
         );
     }
   }
@@ -62,11 +59,9 @@ class ScrollReader extends StatefulWidget {
   const ScrollReader({
     Key? key,
     required this.content,
-    required this.readerDirection,
   }) : super(key: key);
 
   final dynamic content;
-  final ReaderDirection readerDirection;
 
   @override
   State<ScrollReader> createState() => _ScrollReaderState();
@@ -196,7 +191,7 @@ class _ScrollReaderState extends State<ScrollReader> {
                 statusWidth: maxWidth,
                 // height: axis == Axis.horizontal ? maxHeight : null,
                 statusHeight:
-                    axis == Axis.horizontal ? maxHeight : maxHeight / 3,
+                    axis == Axis.horizontal ? maxHeight : maxHeight / 5,
               );
             } else {
               return normalImageWidget(
@@ -205,7 +200,7 @@ class _ScrollReaderState extends State<ScrollReader> {
                 statusWidth: maxWidth,
                 // height: axis == Axis.horizontal ? maxHeight : null,
                 statusHeight:
-                    axis == Axis.horizontal ? maxHeight : maxHeight / 3,
+                    axis == Axis.horizontal ? maxHeight : maxHeight / 5,
               );
             }
           },
