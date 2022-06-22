@@ -128,7 +128,43 @@ class _MyGeneralSettingState extends State<MyGeneralSetting> {
             Global.showSnackBar(context, "设置成功");
           },
         ),
+        // 启动app自动检查最新漫画
+        ListTile(
+          minVerticalPadding: 4,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [const Text("启动时检查最新漫画"), autoRefreshWidget()],
+          ),
+        ),
       ],
+    );
+  }
+
+  Widget autoRefreshWidget() {
+    return DropdownButton<bool>(
+      underline: const SizedBox(),
+      // Initial Value
+      value: context.select((Configs config) => config.autoRefresh),
+      // Down Arrow Icon
+      icon: const Icon(Icons.keyboard_arrow_down),
+      // Array list of items
+      items: const [
+        DropdownMenuItem(
+          value: true,
+          child: Text("是"),
+        ),
+        DropdownMenuItem(
+          value: false,
+          child: Text("否"),
+        )
+      ],
+      // After selecting the desired option,it will
+      // change button value to selected value
+      onChanged: (bool? value) {
+        if (value != null) {
+          Provider.of<Configs>(context, listen: false).autoRefresh = value;
+        }
+      },
     );
   }
 
@@ -198,14 +234,6 @@ class _MyReadSettingState extends State<MyReadSetting> {
             children: [const Text("修改阅读方向"), readerDirWidget()],
           ),
         ),
-        // 阅读时显示时间
-        // ListTile(
-        //   minVerticalPadding: 4,
-        //   title: Row(
-        //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        //     children: [const Text("阅读时显示时间"), readerTimeWidget()],
-        //   ),
-        // )
       ],
     );
   }

@@ -1,7 +1,4 @@
-import 'dart:collection';
-
 import 'package:dio/dio.dart';
-import 'package:domic/comic/api.dart';
 import 'package:domic/comic/extractors/dio.dart';
 import 'package:domic/comic/extractors/dto.dart';
 import 'package:domic/common/common.dart';

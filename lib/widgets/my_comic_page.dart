@@ -86,9 +86,13 @@ class MyComicLayoutState extends State<MyComicLayout>
   void initState() {
     super.initState();
     if (widget.tabIndex == 0) return;
-    checkUpdate().then((shouldUpdate) {
-      Provider.of<ComicLocal>(context, listen: false)
-          .moveToFirstFromFavorite(shouldUpdate);
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      if (Provider.of<Configs>(context, listen: false).autoRefresh) {
+        checkUpdate().then((shouldUpdate) {
+          Provider.of<ComicLocal>(context, listen: false)
+              .moveToFirstFromFavorite(shouldUpdate);
+        });
+      }
     });
   }
 
@@ -116,7 +120,6 @@ class MyComicLayoutState extends State<MyComicLayout>
                   .toList()),
               GestureDetector(
                 onTap: () {
-                  Global.showSnackBar(context, "正在检查更新");
                   if (isLoading) return;
                   checkUpdate().then((shouldUpdate) {
                     Provider.of<ComicLocal>(context, listen: false)
@@ -175,6 +178,7 @@ class MyComicLayoutState extends State<MyComicLayout>
   }
 
   Future<List<ComicSimple>> checkUpdate() {
+    _onLoading();
     isLoading = true;
     List<ComicSimple> shouldUpdate = [];
     var favorite = Provider.of<ComicLocal>(context, listen: false).favorite;
@@ -205,6 +209,7 @@ class MyComicLayoutState extends State<MyComicLayout>
         i++;
       }
       isLoading = false;
+      Navigator.of(context).pop();
       return shouldUpdate;
     });
   }
@@ -222,4 +227,27 @@ class MyComicLayoutState extends State<MyComicLayout>
 
   @override
   bool get wantKeepAlive => true;
+
+  void _onLoading() {
+    showDialog(
+        context: context,
+        builder: (_) {
+          return Dialog(
+            backgroundColor: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  CircularProgressIndicator(),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  Text('正在刷新')
+                ],
+              ),
+            ),
+          );
+        });
+  }
 }

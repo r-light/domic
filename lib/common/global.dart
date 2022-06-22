@@ -205,10 +205,12 @@ class Configs with ChangeNotifier {
   static const listViewInSearchResultKey = "listViewInSearchResult";
   static const readerDirectionKey = "readerDirection";
   static const showTimeInReaderKey = "showTimeInReader";
+  static const autoRefreshKey = "autoRefresh";
 
   late bool _listViewInSearchResult;
   late ReaderDirection _readerDirection;
   late bool _showTimeInReader;
+  late bool _autoRefresh;
   late Box box;
 
   Configs() {
@@ -217,6 +219,7 @@ class Configs with ChangeNotifier {
     _readerDirection =
         box.get(readerDirectionKey) ?? ReaderDirection.topToBottom;
     _showTimeInReader = box.get(showTimeInReaderKey) ?? true;
+    _autoRefresh = box.get(autoRefreshKey) ?? true;
   }
 
   bool get listViewInSearchResult => _listViewInSearchResult;
@@ -241,6 +244,14 @@ class Configs with ChangeNotifier {
     _showTimeInReader = value;
     notifyListeners();
     box.put(showTimeInReaderKey, value);
+  }
+
+  bool get autoRefresh => _autoRefresh;
+
+  set autoRefresh(bool value) {
+    _autoRefresh = value;
+    notifyListeners();
+    box.put(autoRefreshKey, value);
   }
 }
 
