@@ -114,8 +114,7 @@ Widget normalImageWidget(ImageInfo info,
     },
     height: height,
     width: width,
-    placeholder: (context, url) =>
-        waiting(width ?? statusWidth, height ?? statusHeight),
+    placeholder: (context, url) => waiting(statusWidth, statusHeight),
     errorWidget: (context, url, error) => Container(),
   );
 }
@@ -192,12 +191,10 @@ class _MyJmttComicImageState extends State<MyJmttComicImage>
         future: jmttBytes,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return error(widget.width ?? widget.statusWidth,
-                widget.height ?? widget.statusHeight);
+            return error(widget.statusWidth, widget.statusHeight);
           }
           if (!snapshot.hasData || snapshot.requireData.isEmpty) {
-            return waiting(widget.width ?? widget.statusWidth,
-                widget.height ?? widget.statusHeight);
+            return waiting(widget.statusWidth, widget.statusHeight);
           }
           return Image.memory(
             snapshot.requireData,

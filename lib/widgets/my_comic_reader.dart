@@ -74,7 +74,6 @@ class _ScrollReaderState extends State<ScrollReader> {
   late bool _hasMore;
   late int nextEp;
   final List<ImageInfo> imageInfos = [];
-  final List<Size> imageSizes = [];
   final List<MapEntry<int, int>> aidScrambleId = [];
 
   // void _onScroll() {
@@ -137,7 +136,6 @@ class _ScrollReaderState extends State<ScrollReader> {
       setState(() {
         for (var imageInfo in comicInfo.chapters[nextEp].images) {
           imageInfos.add(imageInfo);
-          imageSizes.add(const Size(0, 0));
           aidScrambleId.add(MapEntry(comicInfo.chapters[nextEp].aid ?? 0,
               comicInfo.chapters[nextEp].scrambleId ?? 0));
         }
@@ -188,21 +186,23 @@ class _ScrollReaderState extends State<ScrollReader> {
                 aid: aidScrambleId[index].key,
                 scrambleId: aidScrambleId[index].value,
                 width: maxWidth,
-                height: getRealHeight(maxWidth, imageInfos[index].width,
-                    imageInfos[index].height),
                 statusWidth: maxWidth,
-                statusHeight:
-                    axis == Axis.horizontal ? maxHeight : maxHeight / 3,
+                statusHeight: axis == Axis.horizontal
+                    ? maxHeight
+                    : getRealHeight(maxWidth, imageInfos[index].width,
+                            imageInfos[index].height) ??
+                        maxHeight / 3,
               );
             } else {
               return normalImageWidget(
                 imageInfos[index],
                 width: maxWidth,
-                height: getRealHeight(maxWidth, imageInfos[index].width,
-                    imageInfos[index].height),
                 statusWidth: maxWidth,
-                statusHeight:
-                    axis == Axis.horizontal ? maxHeight : maxHeight / 5,
+                statusHeight: axis == Axis.horizontal
+                    ? maxHeight
+                    : getRealHeight(maxWidth, imageInfos[index].width,
+                            imageInfos[index].height) ??
+                        maxHeight / 5,
               );
             }
           },
