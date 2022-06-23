@@ -95,15 +95,17 @@ Widget normalImageWidget(ImageInfo info,
       BuildContext context,
       ImageProvider imageProvider,
     ) {
-      imageProvider.resolve(const ImageConfiguration()).addListener(
-        ImageStreamListener(
-          (image, synchronousCall) {
-            var myImage = image.image;
-            info.width = myImage.width;
-            info.height = myImage.height;
-          },
-        ),
-      );
+      if (info.height == null || info.width == null) {
+        imageProvider.resolve(const ImageConfiguration()).addListener(
+          ImageStreamListener(
+            (image, synchronousCall) {
+              var myImage = image.image;
+              info.width = myImage.width;
+              info.height = myImage.height;
+            },
+          ),
+        );
+      }
       return Image(
         image: imageProvider,
         height: height,
@@ -112,7 +114,8 @@ Widget normalImageWidget(ImageInfo info,
     },
     height: height,
     width: width,
-    placeholder: (context, url) => waiting(statusWidth, statusHeight),
+    placeholder: (context, url) =>
+        waiting(width ?? statusWidth, height ?? statusHeight),
     errorWidget: (context, url, error) => Container(),
   );
 }
@@ -189,10 +192,12 @@ class _MyJmttComicImageState extends State<MyJmttComicImage>
         future: jmttBytes,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return error(widget.statusWidth, widget.statusHeight);
+            return error(widget.width ?? widget.statusWidth,
+                widget.height ?? widget.statusHeight);
           }
           if (!snapshot.hasData || snapshot.requireData.isEmpty) {
-            return waiting(widget.statusWidth, widget.statusHeight);
+            return waiting(widget.width ?? widget.statusWidth,
+                widget.height ?? widget.statusHeight);
           }
           return Image.memory(
             snapshot.requireData,
