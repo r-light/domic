@@ -161,7 +161,7 @@ class _ScrollReaderState extends State<ScrollReader> {
                 ReaderDirection.rightToLeft
             ? true
             : false;
-    var cachedNum = widget.content["source"] == ConstantString.jmtt ? 2 : 5;
+    var cachedNum = widget.content["source"] == ConstantString.jmtt ? 2 : 3;
     return Stack(
       alignment: AlignmentDirectional.topEnd,
       children: [
@@ -187,17 +187,21 @@ class _ScrollReaderState extends State<ScrollReader> {
                 scrambleId: aidScrambleId[index].value,
                 width: maxWidth,
                 statusWidth: maxWidth,
-                statusHeight:
-                    axis == Axis.horizontal ? maxHeight : maxHeight / 3,
+                statusHeight: axis == Axis.horizontal
+                    ? maxHeight
+                    : getRealHeight(maxWidth, imageInfos[index].width,
+                        imageInfos[index].height, maxHeight / 3),
               );
             } else {
-              return normalImageWidget(
-                imageInfos[index],
-                width: maxWidth,
-                statusWidth: maxWidth,
-                statusHeight:
-                    axis == Axis.horizontal ? maxHeight : maxHeight / 5,
-              );
+              return normalImageWidget(imageInfos[index],
+                  width: maxWidth,
+                  statusWidth: maxWidth,
+                  statusHeight: axis == Axis.horizontal
+                      ? maxHeight
+                      : getRealHeight(maxWidth, imageInfos[index].width,
+                          imageInfos[index].height, maxHeight / 5)
+                  // maxHeight / 5,
+                  );
             }
           },
           itemCount: _hasMore ? imageInfos.length + 1 : imageInfos.length,
@@ -206,8 +210,9 @@ class _ScrollReaderState extends State<ScrollReader> {
     );
   }
 
-  // double? getRealHeight(double maxWidth, int? width, int? height) {
-  //   if (width == null || height == null) return null;
-  //   return maxWidth / width * height;
-  // }
+  double getRealHeight(
+      double maxWidth, int? width, int? height, double dafaultHeight) {
+    if (width == null || height == null || width == 0) return dafaultHeight;
+    return maxWidth / width * height;
+  }
 }

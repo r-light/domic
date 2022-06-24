@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:domic/comic/extractors/dio.dart';
@@ -10,6 +9,7 @@ import 'package:domic/comic/extractors/dto.dart';
 import 'package:domic/common/common.dart';
 import 'package:domic/common/hive.dart';
 import 'package:domic/widgets/components/my_status.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide ImageInfo;
 import 'package:image/image.dart' as image_tool;
@@ -87,14 +87,21 @@ Widget normalImageWidget(ImageInfo info,
     double? width,
     double? statusWidth,
     double? statusHeight}) {
-  return CachedNetworkImage(
-    imageUrl: info.src,
-    fadeInDuration: Duration.zero,
-    fadeOutDuration: Duration.zero,
+  return ExtendedImage.network(
+    info.src,
     height: height,
     width: width,
-    placeholder: (context, url) => waiting(statusWidth, statusHeight),
-    errorWidget: (context, url, error) => Container(),
+    loadStateChanged: (ExtendedImageState state) {
+      if (state.extendedImageLoadState == LoadState.loading) {
+        return waiting(statusWidth, statusHeight);
+      }
+      if (state.extendedImageLoadState == LoadState.failed) {
+        return Container();
+      }
+      info.height = state.extendedImageInfo!.image.height;
+      info.width = state.extendedImageInfo!.image.width;
+      return null;
+    },
   );
 }
 

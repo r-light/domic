@@ -1,6 +1,7 @@
 import 'package:domic/comic/extractors/dto.dart';
 import 'package:domic/common/common.dart';
 import 'package:domic/common/global.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:hive/hive.dart';
@@ -84,6 +85,7 @@ class _MyGeneralSettingState extends State<MyGeneralSetting> {
               var box = Hive.lazyBox(boxName);
               await box.deleteAll(box.keys);
             }
+            clearDiskCachedImages();
             if (!mounted) return;
             Global.showSnackBar(context, "清除成功");
           },
