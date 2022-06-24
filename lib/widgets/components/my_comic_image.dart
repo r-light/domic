@@ -91,27 +91,6 @@ Widget normalImageWidget(ImageInfo info,
     imageUrl: info.src,
     fadeInDuration: Duration.zero,
     fadeOutDuration: Duration.zero,
-    imageBuilder: (
-      BuildContext context,
-      ImageProvider imageProvider,
-    ) {
-      if (info.height == null || info.width == null) {
-        imageProvider.resolve(const ImageConfiguration()).addListener(
-          ImageStreamListener(
-            (image, synchronousCall) {
-              var myImage = image.image;
-              info.width = myImage.width;
-              info.height = myImage.height;
-            },
-          ),
-        );
-      }
-      return Image(
-        image: imageProvider,
-        height: height,
-        width: width,
-      );
-    },
     height: height,
     width: width,
     placeholder: (context, url) => waiting(statusWidth, statusHeight),

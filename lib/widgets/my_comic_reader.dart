@@ -187,22 +187,16 @@ class _ScrollReaderState extends State<ScrollReader> {
                 scrambleId: aidScrambleId[index].value,
                 width: maxWidth,
                 statusWidth: maxWidth,
-                statusHeight: axis == Axis.horizontal
-                    ? maxHeight
-                    : getRealHeight(maxWidth, imageInfos[index].width,
-                            imageInfos[index].height) ??
-                        maxHeight / 3,
+                statusHeight:
+                    axis == Axis.horizontal ? maxHeight : maxHeight / 3,
               );
             } else {
               return normalImageWidget(
                 imageInfos[index],
                 width: maxWidth,
                 statusWidth: maxWidth,
-                statusHeight: axis == Axis.horizontal
-                    ? maxHeight
-                    : getRealHeight(maxWidth, imageInfos[index].width,
-                            imageInfos[index].height) ??
-                        maxHeight / 5,
+                statusHeight:
+                    axis == Axis.horizontal ? maxHeight : maxHeight / 5,
               );
             }
           },
@@ -212,8 +206,8 @@ class _ScrollReaderState extends State<ScrollReader> {
     );
   }
 
-  double? getRealHeight(double maxWidth, int? width, int? height) {
-    if (width == null || height == null) return null;
-    return maxWidth / width * height;
-  }
+  // double? getRealHeight(double maxWidth, int? width, int? height) {
+  //   if (width == null || height == null) return null;
+  //   return maxWidth / width * height;
+  // }
 }
