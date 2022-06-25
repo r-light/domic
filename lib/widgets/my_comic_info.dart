@@ -109,9 +109,7 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
         ) {
           return Column(children: [
             comicSimpleCard(context, snapshot),
-            comicMethod.containsKey(widget.content["record"].source)
-                ? Container()
-                : comicTags(context, snapshot),
+            // comicChapterGrid(context, snapshot)
             Expanded(child: comicChapterGrid(context, snapshot)),
           ]);
         },
@@ -303,55 +301,69 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
     var reversed = _reversed
         ? snapshot.requireData.chapters.reversed.toList()
         : snapshot.requireData.chapters.toList();
-    return GridView.builder(
-      padding: const EdgeInsets.all(5.0),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        childAspectRatio: 3.5,
-        crossAxisSpacing: 15.0,
-        mainAxisSpacing: 10.0,
-      ),
-      itemCount: reversed.length,
-      itemBuilder: (context, index) {
-        Chapter chapter = reversed[index];
-        bool highlight = _index == index;
-        return OutlinedButton(
-            onPressed: () {
-              _index = index;
-              saveIndex(record);
-              var cloned = ComicInfo.fromJson(
-                  jsonDecode(jsonEncode(snapshot.requireData)));
-              cloned.chapters = seqList;
-              Navigator.of(context)
-                  .pushNamed(Routes.myComicReaderRoute, arguments: {
-                "chapters": seqList,
-                "index": !_reversed ? _length! - 1 - _index! : _index!,
-                "source": record.source,
-                "comicInfo": cloned,
-                "comicSimple": widget.content["record"],
-                "reversed": _reversed,
-                "reversedIndex": _reversed ? _length! - 1 - _index! : _index!,
-              }).whenComplete(() => setState(() {}));
-            },
-            style: ButtonStyle(
-              minimumSize: MaterialStateProperty.all(Size.infinite),
-              maximumSize: MaterialStateProperty.all(Size.infinite),
-              backgroundColor:
-                  highlight ? MaterialStateProperty.all(Colors.blue) : null,
-              shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30.0))),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    List<Widget> chapters = [];
+    for (int index = 0; index < reversed.length; index++) {
+      Chapter chapter = reversed[index];
+      bool highlight = _index == index;
+      chapters.add(OutlinedButton(
+          onPressed: () {
+            _index = index;
+            saveIndex(record);
+            var cloned = ComicInfo.fromJson(
+                jsonDecode(jsonEncode(snapshot.requireData)));
+            cloned.chapters = seqList;
+            Navigator.of(context)
+                .pushNamed(Routes.myComicReaderRoute, arguments: {
+              "chapters": seqList,
+              "index": !_reversed ? _length! - 1 - _index! : _index!,
+              "source": record.source,
+              "comicInfo": cloned,
+              "comicSimple": widget.content["record"],
+              "reversed": _reversed,
+              "reversedIndex": _reversed ? _length! - 1 - _index! : _index!,
+            }).whenComplete(() => setState(() {}));
+          },
+          style: ButtonStyle(
+            minimumSize: MaterialStateProperty.all(Size.infinite),
+            maximumSize: MaterialStateProperty.all(Size.infinite),
+            backgroundColor:
+                highlight ? MaterialStateProperty.all(Colors.blue) : null,
+            shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30.0))),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          child: Center(
+            child: Text(
+              chapter.title,
+              style: TextStyle(fontSize: 13, color: fontColor),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-            child: Center(
-              child: Text(
-                chapter.title,
-                style: TextStyle(fontSize: 13, color: fontColor),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ));
-      },
-    );
+          )));
+    }
+    return CustomScrollView(slivers: [
+      SliverList(
+        delegate: SliverChildListDelegate(
+          [
+            comicMethod.containsKey(widget.content["record"].source)
+                ? Container()
+                : comicTags(context, snapshot),
+          ],
+        ),
+      ),
+      SliverPadding(
+        padding: const EdgeInsets.all(5),
+        sliver: SliverGrid(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            childAspectRatio: 3.5,
+            crossAxisSpacing: 15.0,
+            mainAxisSpacing: 10.0,
+          ),
+          delegate: SliverChildListDelegate(chapters),
+        ),
+      )
+    ]);
   }
 
   Widget comicTags(BuildContext context, AsyncSnapshot<ComicInfo> snapshot) {
