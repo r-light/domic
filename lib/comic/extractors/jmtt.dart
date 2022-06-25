@@ -185,6 +185,7 @@ class Jmtt extends Parser {
     res.characters = characters;
     res.views = views;
     res.star = star;
+    res.tagsUrl = tagsUrl;
     return res;
   }
 
@@ -205,6 +206,11 @@ class Jmtt extends Parser {
       ),
     );
 
+    return parseComicPageHelper(resp, page);
+  }
+
+  ComicPageData parseComicPageHelper(
+      MapEntry<int, Response<dynamic>?> resp, int page) {
     var content = resp.value?.data.toString() ?? "";
     var doc = parse(content);
     List<ComicSimple> list = [];
@@ -293,6 +299,28 @@ class Jmtt extends Parser {
       return res;
     }).toList();
     return urls;
+  }
+
+  Future<ComicPageData> comicByTag(String path, int page,
+      {int type = 0}) async {
+    path += "&page=$page";
+    if (type == 0) {
+      path += "&o=mr";
+    } else if (type == 1) {
+      path += "&o=mv";
+    } else if (type == 2) {
+      path += '&o=mp';
+    } else if (type == 3) {
+      path += "&o=tf";
+    }
+    var resp = await MyDio().getHtml(
+      RequestOptions(
+        path: path,
+        baseUrl: domainBase,
+        method: "GET",
+      ),
+    );
+    return parseComicPageHelper(resp, page);
   }
 }
 

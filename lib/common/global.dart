@@ -273,6 +273,8 @@ class ComicLocal with ChangeNotifier {
 
 class Configs with ChangeNotifier {
   static const listViewInSearchResultKey = "listViewInSearchResult";
+  static const listViewInTagResultKey = "listViewInTagResult";
+
   static const readerDirectionKey = "readerDirection";
   static const showTimeInReaderKey = "showTimeInReader";
   static const autoRefreshKey = "autoRefresh";
@@ -280,6 +282,7 @@ class Configs with ChangeNotifier {
   static const cacheImage18NumKey = "cacheImage18Num";
 
   late bool _listViewInSearchResult;
+  late bool _listViewInTagResult;
   late ReaderDirection _readerDirection;
   late bool _showTimeInReader;
   late bool _autoRefresh;
@@ -290,6 +293,7 @@ class Configs with ChangeNotifier {
   Configs() {
     box = Hive.box(ConstantString.propertyBox);
     _listViewInSearchResult = box.get(listViewInSearchResultKey) ?? true;
+    _listViewInTagResult = box.get(listViewInTagResultKey) ?? true;
     _readerDirection =
         box.get(readerDirectionKey) ?? ReaderDirection.topToBottom;
     _showTimeInReader = box.get(showTimeInReaderKey) ?? true;
@@ -304,6 +308,14 @@ class Configs with ChangeNotifier {
     _listViewInSearchResult = value;
     notifyListeners();
     box.put(listViewInSearchResultKey, value);
+  }
+
+  bool get listViewInTagResult => _listViewInTagResult;
+
+  set listViewInTagResult(bool value) {
+    _listViewInTagResult = value;
+    notifyListeners();
+    box.put(listViewInTagResultKey, value);
   }
 
   ReaderDirection get readerDirection => _readerDirection;

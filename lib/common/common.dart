@@ -60,4 +60,5 @@ class Routes {
   static const String myComicReaderRoute = "MyComicReader";
   static const String myAboutMeRoute = "MyAboutMe";
   static const String myComicHomeRoute = "MyComicHome";
+  static const String myComicTagRoute = "MyComicTag";
 }
