@@ -161,7 +161,10 @@ class _ScrollReaderState extends State<ScrollReader> {
                 ReaderDirection.rightToLeft
             ? true
             : false;
-    var cachedNum = widget.content["source"] == ConstantString.jmtt ? 2 : 3;
+    var cachedNum = widget.content["source"] == ConstantString.jmtt
+        ? context.select((Configs configs) => configs.cacheImage18Num)
+        : context.select((Configs configs) => configs.cacheImageNum);
+
     return Stack(
       alignment: AlignmentDirectional.topEnd,
       children: [

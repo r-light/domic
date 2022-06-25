@@ -94,7 +94,7 @@ class ComicSimpleItem extends StatelessWidget {
           ),
           Text(
             comicSimple.sourceName,
-            style: const TextStyle(color: Colors.black, fontSize: fontSize),
+            style: TextStyle(color: Colors.grey[800], fontSize: fontSize),
             textAlign: TextAlign.center,
             maxLines: 1,
           ),

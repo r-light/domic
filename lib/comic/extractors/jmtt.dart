@@ -88,6 +88,7 @@ class Jmtt extends Parser {
             ?.attributes["src"] ??
         "";
     List<String> works = [], tags = [], authors = [], characters = [];
+    List<String> tagsUrl = [];
     doc
         .querySelector("[itemprop='author'][data-type='works']")
         ?.children
@@ -105,6 +106,7 @@ class Jmtt extends Parser {
         ?.children
         .forEach((element) {
       tags.add(element.text);
+      tagsUrl.add(element.attributes["href"] ?? "");
     });
     doc
         .querySelector("[itemprop='author'][data-type='author']")
@@ -250,13 +252,14 @@ class Jmtt extends Parser {
     var pager = doc
         .querySelector(".col-xs-12.col-md-9.col-sm-8>.well.well-sm")
         ?.querySelectorAll(">.text-white");
+    int? total;
     if (page == 1 && pager != null && pager.length >= 4) {
       var from = int.tryParse(pager[1].text) ?? 0;
       var to = int.tryParse(pager[2].text) ?? 1;
-      var total = int.tryParse(pager[3].text) ?? 1;
+      total = int.tryParse(pager[3].text) ?? 1;
       maxPage = (total - 1) ~/ (to - from + 1) + 1;
     }
-    return ComicPageData(maxPage, list);
+    return ComicPageData(maxPage, list, maxNum: total);
   }
 
   String listHelper(var a, var c) {

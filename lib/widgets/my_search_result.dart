@@ -72,8 +72,12 @@ class _MyComicSearchResultState extends State<MyComicSearchResult> {
       records.addAll(page.records);
       maxPage = max(maxPage, maxPageMap[page.records.first.source]!);
       if (currentPage == 1) {
-        totalNum += maxPageMap[page.records.first.source]! *
-            (page.records.length as int);
+        if (page.maxNum == null) {
+          totalNum += maxPageMap[page.records.first.source]! *
+              (page.records.length as int);
+        } else {
+          totalNum += page.maxNum as int;
+        }
       }
     }
     setState(() {

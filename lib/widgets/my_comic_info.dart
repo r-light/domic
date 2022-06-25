@@ -109,6 +109,9 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
         ) {
           return Column(children: [
             comicSimpleCard(context, snapshot),
+            comicMethod.containsKey(widget.content["record"].source)
+                ? Container()
+                : comicTags(context, snapshot),
             Expanded(child: comicChapterGrid(context, snapshot)),
           ]);
         },
@@ -349,6 +352,71 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
             ));
       },
     );
+  }
+
+  Widget comicTags(BuildContext context, AsyncSnapshot<ComicInfo> snapshot) {
+    if (snapshot.hasError || !snapshot.hasData) {
+      return Container();
+    }
+    ComicInfo comicInfo = snapshot.requireData;
+    List<Widget> widgets = [];
+    for (int i = 0; i < comicInfo.tags!.length; i++) {
+      widgets.add(Container(
+        padding: const EdgeInsets.only(
+          left: 10,
+          right: 10,
+          top: 3,
+          bottom: 3,
+        ),
+        margin: const EdgeInsets.only(
+          left: 3,
+          right: 3,
+          top: 3,
+          bottom: 3,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.pink.shade100,
+          border: Border.all(
+            style: BorderStyle.solid,
+            color: Colors.pink.shade400,
+          ),
+          borderRadius: const BorderRadius.all(Radius.circular(30)),
+        ),
+        child: Text(
+          comicInfo.tags![i],
+          style: TextStyle(
+            color: Colors.pink.shade500,
+            height: 1.4,
+          ),
+          strutStyle: const StrutStyle(
+            height: 1.4,
+          ),
+        ),
+      )
+          //   OutlinedButton(
+          //   style: ButtonStyle(
+          //     backgroundColor: MaterialStateProperty.all(Colors.pink.shade100),
+          //     shape: MaterialStateProperty.all(RoundedRectangleBorder(
+          //         borderRadius: BorderRadius.circular(30.0))),
+          //     // tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          //   ),
+          //   child: Text(
+          //     comicInfo.tags![i],
+          //     style: TextStyle(fontSize: 13, color: Colors.pink.shade500),
+          //     maxLines: 1,
+          //     overflow: TextOverflow.ellipsis,
+          //   ),
+          //   onPressed: () {},
+          // )
+          );
+    }
+    return Container(
+        padding: const EdgeInsets.only(bottom: 10, top: 10),
+        child: Wrap(
+          // spacing: 5,
+          // runSpacing: 1.0, // gap between lines
+          children: widgets,
+        ));
   }
 
   void refresh(BuildContext context) {

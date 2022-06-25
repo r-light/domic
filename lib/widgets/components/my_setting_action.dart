@@ -236,6 +236,35 @@ class _MyReadSettingState extends State<MyReadSetting> {
             children: [const Text("修改阅读方向"), readerDirWidget()],
           ),
         ),
+        // 缓存大小
+        ListTile(
+          title: const Text('常规图源缓存'),
+          subtitle: Text(
+              "当前缓存: ${context.select((Configs configs) => configs.cacheImageNum)}"),
+          onTap: () async {
+            int? count = await showListDialog(context, "缓存数目");
+            if (count == null) return;
+            if (!mounted) return;
+            Provider.of<Configs>(context, listen: false).cacheImageNum = count;
+            if (!mounted) return;
+            Global.showSnackBar(context, "设置成功");
+          },
+        ),
+        // 限制历史数目
+        ListTile(
+          title: const Text('18+图源缓存'),
+          subtitle: Text(
+              "当前缓存: ${context.select((Configs configs) => configs.cacheImage18Num)}"),
+          onTap: () async {
+            int? count = await showListDialog(context, "缓存数目");
+            if (count == null) return;
+            if (!mounted) return;
+            Provider.of<Configs>(context, listen: false).cacheImage18Num =
+                count;
+            if (!mounted) return;
+            Global.showSnackBar(context, "设置成功");
+          },
+        ),
       ],
     );
   }
@@ -321,10 +350,10 @@ class _MyReadSettingState extends State<MyReadSetting> {
       builder: (BuildContext context) {
         return Dialog(
           child: ListView.builder(
-            itemCount: 21,
+            itemCount: 10,
             shrinkWrap: true,
             itemBuilder: (BuildContext context, int index) {
-              int number = index * 5;
+              int number = (index + 1) * 1;
               return ListTile(
                 title: Text("$number"),
                 onTap: () => Navigator.of(context).pop(number),

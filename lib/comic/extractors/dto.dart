@@ -99,13 +99,16 @@ class ComicSimple {
 class ComicPageData extends PageData {
   @HiveField(1)
   late List<ComicSimple> records;
+  @HiveField(2)
+  int? maxNum;
 
-  ComicPageData(int pageCount, this.records) : super(pageCount);
+  ComicPageData(int pageCount, this.records, {this.maxNum}) : super(pageCount);
   ComicPageData.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
     records = (json["records"] ?? [])
         .map((e) => ComicSimple.fromJson(e))
         .toList()
         .cast<ComicSimple>();
+    maxNum = json["max_num"];
   }
 }
 
@@ -230,6 +233,8 @@ class ComicInfo {
   String? views;
   @HiveField(14)
   ComicState? state;
+  @HiveField(15)
+  List<String>? tagsUrl;
 
   ComicInfo(this.id, this.title, this.thumb, this.updateDate, this.uploadDate,
       this.description, this.chapters, this.author);
@@ -250,6 +255,7 @@ class ComicInfo {
         "state": ComicState.values.indexOf(state ?? ComicState.unknown),
         "description": description,
         "author": author,
+        "tags_url": tagsUrl,
       };
 
   ComicInfo.fromJson(Map<String, dynamic> json) {
@@ -271,6 +277,7 @@ class ComicInfo {
         .toList()
         .cast<Chapter>();
     author = json["author"] ?? "";
+    tagsUrl = (json["tags_url"] ?? []).cast<String>();
   }
 }
 

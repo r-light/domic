@@ -276,11 +276,15 @@ class Configs with ChangeNotifier {
   static const readerDirectionKey = "readerDirection";
   static const showTimeInReaderKey = "showTimeInReader";
   static const autoRefreshKey = "autoRefresh";
+  static const cacheImageNumKey = "cacheImageNum";
+  static const cacheImage18NumKey = "cacheImage18Num";
 
   late bool _listViewInSearchResult;
   late ReaderDirection _readerDirection;
   late bool _showTimeInReader;
   late bool _autoRefresh;
+  late int _cacheImageNum;
+  late int _cacheImage18Num;
   late Box box;
 
   Configs() {
@@ -290,6 +294,8 @@ class Configs with ChangeNotifier {
         box.get(readerDirectionKey) ?? ReaderDirection.topToBottom;
     _showTimeInReader = box.get(showTimeInReaderKey) ?? true;
     _autoRefresh = box.get(autoRefreshKey) ?? true;
+    _cacheImageNum = box.get(cacheImageNumKey) ?? 5;
+    _cacheImage18Num = box.get(cacheImage18NumKey) ?? 3;
   }
 
   bool get listViewInSearchResult => _listViewInSearchResult;
@@ -322,6 +328,22 @@ class Configs with ChangeNotifier {
     _autoRefresh = value;
     notifyListeners();
     box.put(autoRefreshKey, value);
+  }
+
+  int get cacheImageNum => _cacheImageNum;
+
+  set cacheImageNum(int value) {
+    _cacheImageNum = value;
+    notifyListeners();
+    box.put(cacheImageNumKey, value);
+  }
+
+  int get cacheImage18Num => _cacheImage18Num;
+
+  set cacheImage18Num(int value) {
+    _cacheImage18Num = value;
+    notifyListeners();
+    box.put(cacheImage18NumKey, value);
   }
 }
 

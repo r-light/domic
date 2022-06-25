@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:domic/comic/extractors/dto.dart';
 import 'package:domic/common/common.dart';
 import 'package:domic/common/global.dart';
 import 'package:flutter/material.dart';
@@ -24,47 +25,61 @@ class MyDrawer extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 const MyCover(),
+                ListTile(
+                  leading: const Icon(
+                    Icons.import_contacts,
+                  ),
+                  title: const Text(ConstantString.comicPageTitle),
+                  onTap: () => Navigator.pop(context),
+                ),
+                ListTile(
+                  leading: const Icon(
+                    Icons.source,
+                  ),
+                  title: const Text(ConstantString.source),
+                  onTap: () =>
+                      Navigator.pushNamed(context, Routes.myComicSourceRoute),
+                ),
+                ListTile(
+                  leading: const Icon(
+                    Icons.settings,
+                  ),
+                  title: const Text(ConstantString.setting),
+                  onTap: () =>
+                      Navigator.pushNamed(context, Routes.mySettingRoute),
+                ),
+                ListTile(
+                  leading: const Icon(
+                    Icons.info_outline,
+                  ),
+                  title: const Text(ConstantString.about),
+                  onTap: () =>
+                      Navigator.pushNamed(context, Routes.myAboutMeRoute),
+                ),
                 Expanded(
                   child: ListView(
-                    children: <Widget>[
-                      ListTile(
-                        leading: const Icon(
-                          Icons.import_contacts,
-                        ),
-                        title: const Text(ConstantString.comicPageTitle),
-                        onTap: () => Navigator.pop(context),
-                      ),
-                      ListTile(
-                        leading: const Icon(
-                          Icons.source,
-                        ),
-                        title: const Text(ConstantString.source),
-                        onTap: () => Navigator.pushNamed(
-                            context, Routes.myComicSourceRoute),
-                      ),
-                      ListTile(
-                        leading: const Icon(
-                          Icons.settings,
-                        ),
-                        title: const Text(ConstantString.setting),
-                        onTap: () =>
-                            Navigator.pushNamed(context, Routes.mySettingRoute),
-                      ),
-                      ListTile(
-                        leading: const Icon(
-                          Icons.info_outline,
-                        ),
-                        title: const Text(ConstantString.about),
-                        onTap: () =>
-                            Navigator.pushNamed(context, Routes.myAboutMeRoute),
-                      ),
-                    ],
+                    children: getComicSource(context),
                   ),
                 ),
               ],
             ),
           )),
     );
+  }
+
+  List<Widget> getComicSource(BuildContext context) {
+    return [
+      ListTile(
+        leading: const Icon(
+          Icons.import_contacts,
+        ),
+        title: Text(sourcesName["pufei"]!),
+        onTap: () =>
+            Navigator.pushNamed(context, Routes.myComicHomeRoute, arguments: {
+          "source": "pufei",
+        }),
+      ),
+    ];
   }
 }
 

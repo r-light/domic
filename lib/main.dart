@@ -4,6 +4,7 @@ import 'package:domic/comic/extractors/dto.dart';
 import 'package:domic/common/common.dart';
 import 'package:domic/common/global.dart';
 import 'package:domic/common/hive.dart';
+import 'package:domic/widgets/components/my_comic_home.dart';
 import 'package:domic/widgets/components/my_setting_action.dart';
 import 'package:domic/widgets/components/my_version.dart';
 import 'package:domic/widgets/my_about_me.dart';
@@ -75,6 +76,8 @@ class MyApp extends StatelessWidget {
               MyComicInfoPage(content: settings.arguments),
           Routes.myComicReaderRoute: (ctx) =>
               MyComicReader(content: settings.arguments),
+          Routes.myComicHomeRoute: (ctx) =>
+              MyComicHome(content: settings.arguments),
         };
         WidgetBuilder builder = routes[settings.name]!;
         return MaterialPageRoute(builder: (ctx) => builder(ctx));

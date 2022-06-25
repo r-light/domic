@@ -114,15 +114,18 @@ class ComicPageDataAdapter extends TypeAdapter<ComicPageData> {
     return ComicPageData(
       fields[0] as int,
       (fields[1] as List).cast<ComicSimple>(),
+      maxNum: fields[2] as int?,
     );
   }
 
   @override
   void write(BinaryWriter writer, ComicPageData obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(1)
       ..write(obj.records)
+      ..writeByte(2)
+      ..write(obj.maxNum)
       ..writeByte(0)
       ..write(obj.pageCount);
   }
@@ -259,13 +262,14 @@ class ComicInfoAdapter extends TypeAdapter<ComicInfo> {
       ..tags = (fields[11] as List?)?.cast<String>()
       ..star = fields[12] as String?
       ..views = fields[13] as String?
-      ..state = fields[14] as ComicState?;
+      ..state = fields[14] as ComicState?
+      ..tagsUrl = (fields[15] as List?)?.cast<String>();
   }
 
   @override
   void write(BinaryWriter writer, ComicInfo obj) {
     writer
-      ..writeByte(15)
+      ..writeByte(16)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -295,7 +299,9 @@ class ComicInfoAdapter extends TypeAdapter<ComicInfo> {
       ..writeByte(13)
       ..write(obj.views)
       ..writeByte(14)
-      ..write(obj.state);
+      ..write(obj.state)
+      ..writeByte(15)
+      ..write(obj.tagsUrl);
   }
 
   @override

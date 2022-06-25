@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:domic/comic/extractors/dio.dart';
@@ -8,6 +7,7 @@ import 'package:domic/comic/extractors/parser_entity.dart';
 import 'package:domic/comic/extractors/utils.dart';
 import 'package:gbk_codec/gbk_codec.dart';
 import 'package:html/parser.dart';
+import 'package:path/path.dart';
 
 class Pufei extends Parser {
   static Pufei? _instance;
@@ -174,7 +174,7 @@ class Pufei extends Parser {
           id, title, thumb, author, updateDate, source, sourceName));
     });
     var maxPage = total ~/ perPage + (total % perPage == 0 ? 0 : 1);
-    return ComicPageData(maxPage, list);
+    return ComicPageData(maxPage, list, maxNum: total);
   }
 
   String listHelper(var a, var c) {
@@ -208,6 +208,79 @@ class Pufei extends Parser {
       return res;
     }).toList();
     return urls;
+  }
+
+  Future<List<MapEntry<String, String>>> getComicTabs() async {
+    var resp = await MyDio().getHtml(
+      RequestOptions(
+          path: domainBase, method: "GET", responseDecoder: gbkDecoder),
+    );
+    var content = resp.value?.data.toString();
+    var doc = parse(content);
+    List<MapEntry<String, String>> res = [];
+    (doc.querySelector(".navWarp")?.children
+          ?..removeLast()
+          ..removeAt(0))
+        ?.forEach((element) {
+      var href = element.firstChild?.attributes["href"] ?? "";
+      var text = trimAllLF(element.text);
+      res.add(MapEntry(text, join(href, "view.html")));
+    });
+    return res;
+  }
+
+  Future<ComicPageData> comicByTab(String path, int page) async {
+    if (page != 1) {
+      var list = path.split(".");
+      if (list.isNotEmpty) list[0] += "_$page";
+      path = list.join(".");
+    }
+    var resp = await MyDio().getHtml(
+      RequestOptions(
+          path: path,
+          baseUrl: domainBase,
+          method: "GET",
+          responseDecoder: gbkDecoder),
+    );
+    var content = resp.value?.data.toString();
+    var doc = parse(content);
+    // parse page
+    var pager = doc.querySelectorAll("#pagerH>strong");
+
+    var total =
+        pager.isNotEmpty ? int.tryParse(trimAllLF(pager[0].text)) ?? 0 : 0;
+    var perPage =
+        pager.length > 1 ? int.tryParse(trimAllLF(pager[1].text)) ?? 1 : 1;
+    List<ComicSimple> list = [];
+    doc.querySelector("#dmList")?.querySelectorAll("li").forEach((e) {
+      var title = e.querySelector("dl>dt>a")?.text ?? "";
+      title = trimAllLF(title);
+      var thumb = e.querySelector("img")?.attributes["_src"] ?? "";
+      var id = e.querySelector("a")?.attributes["href"] ?? "";
+      var children = e.querySelectorAll("dl>dd>p");
+      var updateDate = children.isNotEmpty ? children[0].text : "";
+      if (updateDate.isNotEmpty) {
+        int i = 0;
+        while (i < updateDate.length &&
+            !(updateDate[i].codeUnitAt(0) >= '0'.codeUnitAt(0) &&
+                updateDate[i].codeUnitAt(0) <= '9'.codeUnitAt(0))) {
+          i++;
+        }
+        updateDate = updateDate.substring(i);
+      }
+      var author = "";
+      if (children.length > 3) {
+        var clone = children[2].clone(true);
+        clone.querySelector("em")?.remove();
+        author = clone.text;
+      }
+      var source = "pufei";
+      var sourceName = sourcesName["pufei"] ?? "";
+      list.add(ComicSimple(
+          id, title, thumb, author, updateDate, source, sourceName));
+    });
+    var maxPage = total ~/ perPage + (total % perPage == 0 ? 0 : 1);
+    return ComicPageData(maxPage, list, maxNum: total);
   }
 }
 
