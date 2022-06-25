@@ -376,8 +376,6 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
               bottom: 3,
             ),
             margin: const EdgeInsets.only(
-              left: 4,
-              right: 4,
               top: 3,
               bottom: 3,
             ),
@@ -402,9 +400,11 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
           )));
     }
     return Container(
-        padding: const EdgeInsets.only(bottom: 10, top: 10),
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.all(10),
         child: Wrap(
-          // spacing: 5,
+          alignment: WrapAlignment.start,
+          spacing: 10,
           // runSpacing: 1.0, // gap between lines
           children: widgets,
         ));
