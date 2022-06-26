@@ -165,51 +165,49 @@ class _ScrollReaderState extends State<ScrollReader> {
         ? context.select((Configs configs) => configs.cacheImage18Num)
         : context.select((Configs configs) => configs.cacheImageNum);
 
-    return Stack(
-      alignment: AlignmentDirectional.topEnd,
-      children: [
-        ListView.builder(
-          scrollDirection: axis,
-          controller: _controller,
-          reverse: reversed,
-          cacheExtent: axis == Axis.horizontal
-              ? maxWidth * cachedNum
-              : maxHeight * cachedNum,
-          itemBuilder: (context, index) {
-            if (index >= imageInfos.length) {
-              if (!_isLoading && _hasMore) {
-                loadNextEpisode();
-              }
-              return _hasMore ? waiting(maxWidth, maxHeight) : Container();
+    return Container(
+      color: Colors.black,
+      child: ListView.builder(
+        scrollDirection: axis,
+        controller: _controller,
+        reverse: reversed,
+        cacheExtent: axis == Axis.horizontal
+            ? maxWidth * cachedNum
+            : maxHeight * cachedNum,
+        itemBuilder: (context, index) {
+          if (index >= imageInfos.length) {
+            if (!_isLoading && _hasMore) {
+              loadNextEpisode();
             }
-            if (widget.content["source"] == ConstantString.jmtt) {
-              return MyJmttComicImage(
-                imageInfo: imageInfos[index],
-                source: widget.content["source"],
-                aid: aidScrambleId[index].key,
-                scrambleId: aidScrambleId[index].value,
+            return _hasMore ? waiting(maxWidth, maxHeight) : Container();
+          }
+          if (widget.content["source"] == ConstantString.jmtt) {
+            return MyJmttComicImage(
+              imageInfo: imageInfos[index],
+              source: widget.content["source"],
+              aid: aidScrambleId[index].key,
+              scrambleId: aidScrambleId[index].value,
+              width: maxWidth,
+              statusWidth: maxWidth,
+              statusHeight: axis == Axis.horizontal
+                  ? maxHeight
+                  : getRealHeight(maxWidth, imageInfos[index].width,
+                      imageInfos[index].height, maxHeight / 3),
+            );
+          } else {
+            return normalImageWidget(imageInfos[index],
                 width: maxWidth,
                 statusWidth: maxWidth,
                 statusHeight: axis == Axis.horizontal
                     ? maxHeight
                     : getRealHeight(maxWidth, imageInfos[index].width,
-                        imageInfos[index].height, maxHeight / 3),
-              );
-            } else {
-              return normalImageWidget(imageInfos[index],
-                  width: maxWidth,
-                  statusWidth: maxWidth,
-                  statusHeight: axis == Axis.horizontal
-                      ? maxHeight
-                      : getRealHeight(maxWidth, imageInfos[index].width,
-                          imageInfos[index].height, maxHeight / 5)
-                  // maxHeight / 5,
-                  );
-            }
-          },
-          itemCount: _hasMore ? imageInfos.length + 1 : imageInfos.length,
-        ),
-      ],
+                        imageInfos[index].height, maxHeight / 5)
+                // maxHeight / 5,
+                );
+          }
+        },
+        itemCount: _hasMore ? imageInfos.length + 1 : imageInfos.length,
+      ),
     );
   }
 
