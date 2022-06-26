@@ -39,6 +39,7 @@ class Bainian extends Parser {
       for (int i = 0; i < chapterImages.length; i++) {
         tmp = trimAllLF(chapterImages[i]);
         chapterImages[i] = tmp.substring(1, tmp.length - 1);
+        chapterImages[i] = chapterImages[i].replaceAll('\\/', '/');
       }
     }
     chapter.len = chapterImages.length;

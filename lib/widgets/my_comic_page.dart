@@ -26,6 +26,7 @@ class MyComicPage extends StatelessWidget {
   Widget build(BuildContext context) {
     EasyLoading.instance.infoWidget = const Icon(
       Icons.refresh,
+      color: Colors.white,
       size: 40,
     );
     return DefaultTabController(
