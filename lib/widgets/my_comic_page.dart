@@ -7,7 +7,9 @@ import 'package:domic/widgets/components/my_comic_card.dart';
 import 'package:domic/widgets/components/my_drawer.dart';
 import 'package:domic/widgets/components/my_grid_gesture_detector.dart';
 import 'package:domic/widgets/components/my_setting_action.dart';
+import 'package:domic/widgets/components/my_version.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
@@ -22,6 +24,10 @@ class MyComicPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    EasyLoading.instance.infoWidget = const Icon(
+      Icons.refresh,
+      size: 40,
+    );
     return DefaultTabController(
       initialIndex: 1,
       length: tabs.length,
@@ -86,19 +92,32 @@ class MyComicLayoutState extends State<MyComicLayout>
   // final int crossAxisCount = 3;
   // final double titleFontSize = 12;
   // final double sourceFontSize = 12;
+  void checkVersionHelper() {
+    checkVersion().then((shouldUpdate) {
+      if (shouldUpdate) {
+        Global.showSnackBar("检测到新版本");
+      } else {
+        Global.showSnackBar("当前版本已是最新");
+      }
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     if (widget.tabIndex == 0) return;
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      if (widget.tabIndex == 1 &&
-          Provider.of<Configs>(context, listen: false).autoRefresh) {
-        checkUpdate(Provider.of<ComicLocal>(context, listen: false).favorite)
-            .then((shouldUpdate) {
-          Provider.of<ComicLocal>(context, listen: false)
-              .moveToFirstFromFavorite(shouldUpdate);
-        });
+      if (widget.tabIndex == 1) {
+        if (Provider.of<Configs>(context, listen: false).autoRefresh) {
+          checkUpdate(Provider.of<ComicLocal>(context, listen: false).favorite)
+              .then((shouldUpdate) {
+            checkVersionHelper();
+            Provider.of<ComicLocal>(context, listen: false)
+                .moveToFirstFromFavorite(shouldUpdate);
+          });
+        } else {
+          checkVersionHelper();
+        }
       }
     });
   }
@@ -292,7 +311,7 @@ class MyComicLayoutState extends State<MyComicLayout>
         i++;
       }
       isLoading = false;
-      Navigator.of(context).pop();
+      EasyLoading.showSuccess("更新成功", dismissOnTap: true);
       return shouldUpdate;
     });
   }
@@ -312,25 +331,10 @@ class MyComicLayoutState extends State<MyComicLayout>
   bool get wantKeepAlive => true;
 
   void _onLoading() {
-    showDialog(
-        context: context,
-        builder: (_) {
-          return Dialog(
-            backgroundColor: Colors.white,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  CircularProgressIndicator(),
-                  SizedBox(
-                    height: 15,
-                  ),
-                  Text('正在刷新')
-                ],
-              ),
-            ),
-          );
-        });
+    EasyLoading.showInfo(
+      '正在查询漫画更新',
+      duration: const Duration(minutes: 1),
+      dismissOnTap: false,
+    );
   }
 }

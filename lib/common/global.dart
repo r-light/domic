@@ -1,10 +1,10 @@
 import 'dart:collection';
-import 'dart:math';
 
 import 'package:domic/comic/api.dart';
 import 'package:domic/comic/extractors/dto.dart';
 import 'package:domic/common/common.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:hive/hive.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -49,19 +49,13 @@ class Global {
         .delete(comicInfoKey(record.source, record.id));
   }
 
-  static void showSnackBar(BuildContext context, String text,
-      [Duration? duration]) {
-    ScaffoldMessenger.of(context).removeCurrentSnackBar();
+  static void showSnackBar(String text, [Duration? duration]) {
+    EasyLoading.dismiss();
     duration == null
-        ? ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(text),
-            // behavior: SnackBarBehavior.floating,
-          ))
-        : ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(text),
-            duration: duration,
-            // behavior: SnackBarBehavior.floating,
-          ));
+        ? EasyLoading.showToast(text,
+            toastPosition: EasyLoadingToastPosition.bottom)
+        : EasyLoading.showToast(text,
+            toastPosition: EasyLoadingToastPosition.bottom, duration: duration);
   }
 
   static void remove(ComicSimple record) {

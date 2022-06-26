@@ -141,10 +141,11 @@ class Jmtt extends Parser {
       }
     });
 
-    var desc = doc.querySelectorAll("#album_photo_cover>div>.p-t-5.p-b-5");
+    var desc =
+        doc.querySelectorAll(".panel-body>.row>.col-lg-7>div>.p-t-5.p-b-5");
     var description = "";
     if (desc.length > 1) {
-      description = desc[1].text;
+      description = trimAllLF(desc[1].text);
     }
 
     List<Chapter> chapters = [];
@@ -222,10 +223,8 @@ class Jmtt extends Parser {
         var id = e.querySelector("a")?.attributes["href"] ?? "";
         var title = e.querySelector("span.video-title")?.text ?? "";
         title = trimAllLF(title);
-        var thumb = e
-                .querySelector(".thumb-overlay")
-                ?.querySelector("img")
-                ?.attributes["data-original"] ??
+        var thumb = e.querySelector("img")?.attributes["data-original"] ??
+            e.querySelector("img")?.attributes["src"] ??
             "";
         var updateDate = "";
         var star = e.querySelector(".label-loveicon")?.text.trim() ?? "";
@@ -257,12 +256,17 @@ class Jmtt extends Parser {
     var maxPage = 1;
     var pager = doc
         .querySelector(".col-xs-12.col-md-9.col-sm-8>.well.well-sm")
-        ?.querySelectorAll(">.text-white");
+        ?.querySelectorAll(".text-white");
     int? total;
     if (page == 1 && pager != null && pager.length >= 4) {
       var from = int.tryParse(pager[1].text) ?? 0;
       var to = int.tryParse(pager[2].text) ?? 1;
       total = int.tryParse(pager[3].text) ?? 1;
+      maxPage = (total - 1) ~/ (to - from + 1) + 1;
+    } else if (page == 1 && pager != null && pager.length >= 3) {
+      var from = int.tryParse(pager[0].text) ?? 0;
+      var to = int.tryParse(pager[1].text) ?? 1;
+      total = int.tryParse(pager[2].text) ?? 1;
       maxPage = (total - 1) ~/ (to - from + 1) + 1;
     }
     return ComicPageData(maxPage, list, maxNum: total);
@@ -322,13 +326,33 @@ class Jmtt extends Parser {
     );
     return parseComicPageHelper(resp, page);
   }
+
+  Future<List<MapEntry<String, String>>> getComicTabs() async {
+    var resp = await MyDio().getHtml(
+      RequestOptions(baseUrl: domainBase, path: "/theme", method: "GET"),
+    );
+    var content = resp.value?.data.toString();
+    var doc = parse(content);
+    List<MapEntry<String, String>> res = [];
+    doc.querySelectorAll(".btn.btn-default>a").forEach((element) {
+      var href = element.attributes["href"] ?? "";
+      var text = trimAllLF(element.text);
+      res.add(MapEntry(text, href));
+    });
+    return res.sublist(8);
+  }
+
+  Future<ComicPageData> comicByTab(String path, int page) async {
+    if (page != 1) {
+      path += "&page=$page";
+    }
+    var resp = await MyDio().getHtml(
+      RequestOptions(
+        path: path,
+        baseUrl: domainBase,
+        method: "GET",
+      ),
+    );
+    return parseComicPageHelper(resp, page);
+  }
 }
-
-// void main() async {
-//   var pageData = await Jmtt().comicByName("星野", 1);
-//   print(pageData.pageCount);
-
-//   // var comicInfo = await Pufei().comicById(pageData.records[0].id);
-//   // await Pufei().comicByChapter(comicInfo, idx: 0);
-//   // print(comicInfo.chapters[0].images[0].src);
-// }

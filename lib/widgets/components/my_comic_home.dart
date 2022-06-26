@@ -32,7 +32,7 @@ class _MyComicHomeState extends State<MyComicHome> {
         appBar: AppBar(
           elevation: 0.0,
           centerTitle: false,
-          title: Text(sourcesName["pufei"]!),
+          title: Text(sourcesName[widget.content["source"]]!),
           actions: [
             IconButton(
               onPressed: () =>
@@ -143,8 +143,8 @@ class _MyComicHomeLayoutState extends State<MyComicHomeLayout> {
 
     Future future;
     var lazyBoxName = ConstantString.sourceToLazyBox[widget.source]!;
-    var key = widget.source + path + currentPage.toString();
-    if (MyHive().isInHive(lazyBoxName, key, dur: const Duration(hours: 1))) {
+    var key = "${widget.source}${path}_$currentPage";
+    if (MyHive().isInHive(lazyBoxName, key, dur: const Duration(minutes: 10))) {
       future = MyHive().getInHive(lazyBoxName, key);
     } else {
       var parser = (comicMethod[widget.source] ?? comic18Method[widget.source]!)

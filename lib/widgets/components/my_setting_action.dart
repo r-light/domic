@@ -73,7 +73,7 @@ class _MyGeneralSettingState extends State<MyGeneralSetting> {
         ListTile(
           title: const Text('删除缓存'),
           onTap: () async {
-            Global.showSnackBar(context, "正在清除");
+            Global.showSnackBar("正在清除");
             await DefaultCacheManager().emptyCache();
             for (var boxName in ConstantString.boxName) {
               if (boxName == ConstantString.timeBox) {
@@ -87,18 +87,18 @@ class _MyGeneralSettingState extends State<MyGeneralSetting> {
             }
             clearDiskCachedImages();
             if (!mounted) return;
-            Global.showSnackBar(context, "清除成功");
+            Global.showSnackBar("清除成功");
           },
         ),
         // 删除历史记录
         ListTile(
           title: const Text('删除历史记录'),
           onTap: () async {
-            Global.showSnackBar(context, "正在清除");
+            Global.showSnackBar("正在清除");
             await Provider.of<ComicLocal>(context, listen: false)
                 .removeAllHistory();
             if (!mounted) return;
-            Global.showSnackBar(context, "清除成功");
+            Global.showSnackBar("清除成功");
           },
         ),
         // 清除收藏
@@ -108,11 +108,11 @@ class _MyGeneralSettingState extends State<MyGeneralSetting> {
             bool? delete = await showDeleteConfirmDialog(context, "是否删除收藏");
             if (delete == null) return;
             if (!mounted) return;
-            Global.showSnackBar(context, "正在清除");
+            Global.showSnackBar("正在清除");
             await Provider.of<ComicLocal>(context, listen: false)
                 .removeAllFavorite();
             if (!mounted) return;
-            Global.showSnackBar(context, "清除成功");
+            Global.showSnackBar("清除成功");
           },
         ),
         // 限制历史数目
@@ -127,7 +127,7 @@ class _MyGeneralSettingState extends State<MyGeneralSetting> {
             Provider.of<ComicLocal>(context, listen: false).historyLimit =
                 count;
             if (!mounted) return;
-            Global.showSnackBar(context, "设置成功");
+            Global.showSnackBar("设置成功");
           },
         ),
         // 启动app自动检查最新漫画
@@ -247,7 +247,7 @@ class _MyReadSettingState extends State<MyReadSetting> {
             if (!mounted) return;
             Provider.of<Configs>(context, listen: false).cacheImageNum = count;
             if (!mounted) return;
-            Global.showSnackBar(context, "设置成功");
+            Global.showSnackBar("设置成功");
           },
         ),
         // 限制历史数目
@@ -262,7 +262,7 @@ class _MyReadSettingState extends State<MyReadSetting> {
             Provider.of<Configs>(context, listen: false).cacheImage18Num =
                 count;
             if (!mounted) return;
-            Global.showSnackBar(context, "设置成功");
+            Global.showSnackBar("设置成功");
           },
         ),
       ],

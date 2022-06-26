@@ -212,40 +212,5 @@ class _MyComicTagState extends State<MyComicTag> {
                 child: Text("最多爱心"),
               ),
             ]);
-    return DropdownButton<int>(
-      underline: const SizedBox(),
-      // Initial Value
-      value: 0,
-      // Down Arrow Icon
-      icon: const Icon(Icons.more),
-      // Array list of items
-      items: const [
-        DropdownMenuItem(
-          value: 0,
-          child: Text("最新"),
-        ),
-        DropdownMenuItem(
-          value: 1,
-          child: Text("最多浏览"),
-        ),
-        DropdownMenuItem(
-          value: 2,
-          child: Text("最多图片"),
-        ),
-        DropdownMenuItem(
-          value: 3,
-          child: Text("最多爱心"),
-        )
-      ],
-      // After selecting the desired option,it will
-      // change button value to selected value
-      onChanged: (int? value) {
-        if (value != null) {
-          setState(() {
-            type = value;
-          });
-        }
-      },
-    );
   }
 }

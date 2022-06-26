@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:domic/comic/api.dart';
 import 'package:domic/comic/extractors/dto.dart';
 import 'package:domic/common/common.dart';
 import 'package:domic/common/global.dart';
@@ -68,18 +69,26 @@ class MyDrawer extends StatelessWidget {
   }
 
   List<Widget> getComicSource(BuildContext context) {
-    return [
-      ListTile(
-        leading: const Icon(
-          Icons.import_contacts,
+    List<Widget> res = [];
+    for (var source in Routes.routes.keys) {
+      res.add(
+        ListTile(
+          leading: comicMethod.containsKey(source)
+              ? const Icon(
+                  Icons.import_contacts,
+                )
+              : const Icon(
+                  Icons.eighteen_up_rating,
+                ),
+          title: Text(sourcesName[source]!),
+          onTap: () =>
+              Navigator.pushNamed(context, Routes.myComicHomeRoute, arguments: {
+            "source": source,
+          }),
         ),
-        title: Text(sourcesName["pufei"]!),
-        onTap: () =>
-            Navigator.pushNamed(context, Routes.myComicHomeRoute, arguments: {
-          "source": "pufei",
-        }),
-      ),
-    ];
+      );
+    }
+    return res;
   }
 }
 

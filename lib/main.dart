@@ -16,6 +16,7 @@ import 'package:domic/widgets/my_search_page.dart';
 import 'package:domic/widgets/my_comic_page.dart';
 import 'package:domic/widgets/my_search_result.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:hive/hive.dart';
 import 'package:html/parser.dart';
 import 'package:provider/provider.dart';
@@ -102,6 +103,7 @@ class MyApp extends StatelessWidget {
       ),
       themeMode: ThemeMode.system,
       home: const MyComicPage(),
+      builder: EasyLoading.init(),
     );
   }
 }

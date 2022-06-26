@@ -167,12 +167,60 @@ class Gufeng extends Parser {
     });
     return ComicPageData(pageCount, list);
   }
-}
 
-// void main() async {
-//   var pageData = await Gufeng().comicByName("重", 1);
-//   print(pageData.pageCount);
-//   var comicInfo = await Bainian().comicById(pageData.records[0].id);
-//   await Bainian().comicByChapter(comicInfo, idx: 0);
-//   print(comicInfo.chapters[0].images[0].src);
-// }
+  Future<List<MapEntry<String, String>>> getComicTabs() async {
+    var resp = await MyDio().getHtml(
+      RequestOptions(baseUrl: domainBase, path: "/rank/-click/", method: "GET"),
+    );
+    var content = resp.value?.data.toString();
+    var doc = parse(content);
+    List<MapEntry<String, String>> res = [];
+    doc.querySelectorAll(".fl>.orderby>li").forEach((element) {
+      var href = element.firstChild?.attributes["href"] ?? "";
+      var text = trimAllLF(element.text);
+      res.add(MapEntry(text, href));
+    });
+
+    return res;
+  }
+
+  Future<ComicPageData> comicByTab(String path, int page) async {
+    var resp = await MyDio().getHtml(
+      RequestOptions(path: path, baseUrl: domainBase, method: "GET"),
+    );
+    var content = resp.value?.data.toString();
+    var doc = parse(content);
+    List<ComicSimple> list = [];
+    doc
+        .querySelector(".rank-list.clearfix")
+        ?.querySelectorAll("li")
+        .forEach((e) {
+      var title = e.querySelector("p>a")?.text ?? "";
+      title = trimAllLF(title);
+      var thumb = e.querySelector("img")?.attributes["src"] ?? "";
+      var id = e.querySelector("a")?.attributes["href"] ?? "";
+
+      var child = e.querySelector(".updateon")?.clone(true);
+      child?.querySelector(":nth-child(1)")?.remove();
+
+      var updateDate = child?.text ?? "";
+      if (updateDate.isNotEmpty) {
+        int i = 0;
+        while (i < updateDate.length &&
+            !(updateDate[i].codeUnitAt(0) >= '0'.codeUnitAt(0) &&
+                updateDate[i].codeUnitAt(0) <= '9'.codeUnitAt(0))) {
+          i++;
+        }
+        updateDate = updateDate.substring(i);
+        updateDate = trimAllLF(updateDate);
+      }
+      var source = "gufeng";
+      var sourceName = sourcesName["gufeng"] ?? "";
+      var author = "";
+      list.add(ComicSimple(
+          id, title, thumb, author, updateDate, source, sourceName));
+    });
+    var maxPage = 1;
+    return ComicPageData(maxPage, list, maxNum: list.length);
+  }
+}

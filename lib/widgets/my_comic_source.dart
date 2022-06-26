@@ -142,7 +142,6 @@ class MySourceLayoutState extends State<MySourceLayout> {
       itemBuilder: (context, index) {
         String source = sources[index];
         return ListTile(
-          tileColor: Colors.white,
           title: Text(sourcesName[source]!),
           trailing: IconButton(
             icon: getCurrentIcon(sourceMap[source]!),

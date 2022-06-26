@@ -80,7 +80,12 @@ class Pufei extends Parser {
         ? (children[0].querySelector("font")?.text ?? "")
         : "";
     var uploadDate = updateDate;
-    var author = children.length > 1 ? (children[1].text) : "";
+    var author = "";
+    if (children.length > 1) {
+      var clone = children[1].clone(true);
+      clone.querySelector("span")?.remove();
+      author = clone.text;
+    }
     var description =
         doc.querySelector(".leftContent>.description>#intro1")?.text ?? "";
     List<Chapter> chapters = [];
@@ -283,10 +288,3 @@ class Pufei extends Parser {
     return ComicPageData(maxPage, list, maxNum: total);
   }
 }
-
-// void main() async {
-//   var pageData = await Pufei().comicByName("柯南", 1);
-//   var comicInfo = await Pufei().comicById(pageData.records[0].id);
-//   await Pufei().comicByChapter(comicInfo, idx: 0);
-//   print(comicInfo.chapters[0].images[0].src);
-// }

@@ -221,7 +221,7 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
       BuildContext context, AsyncSnapshot<ComicInfo> snapshot) {
     ComicSimple record = widget.content["record"];
     return Container(
-      padding: const EdgeInsets.only(left: 10, right: 10, bottom: 5),
+      padding: const EdgeInsets.only(left: 10, right: 10, bottom: 5, top: 5),
       decoration: dec,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -261,17 +261,30 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
                             ),
                             onTap: () => Navigator.of(context).pushNamed(
                                 Routes.myComicSearchResultRoute,
-                                arguments: record.author),
+                                arguments:
+                                    snapshot.data?.author ?? record.author),
                           ),
                         ),
-                        Text(
-                          record.sourceName,
-                          style: const TextStyle(color: Colors.white),
-                        ),
+                        GestureDetector(
+                          child: Text(
+                            record.sourceName,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          onTap: () {
+                            if (Routes.routes
+                                .containsKey(widget.content["record"].source)) {
+                              Navigator.pushNamed(
+                                  context, Routes.myComicHomeRoute,
+                                  arguments: {
+                                    "source": widget.content["record"].source,
+                                  });
+                            }
+                          },
+                        )
                       ]),
                   const Padding(padding: EdgeInsets.symmetric(vertical: 2.0)),
                   SizedBox(
-                    height: 80,
+                    height: 100,
                     child: SingleChildScrollView(
                       child: Text(
                         snapshot.data?.description ?? "",
@@ -423,7 +436,7 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
   }
 
   void refresh(BuildContext context) {
-    Global.showSnackBar(context, "正在查询最近更新", const Duration(seconds: 1));
+    Global.showSnackBar("正在查询最近更新", const Duration(seconds: 1));
     setState(() {
       _comicInfo = loadComicInfo(dur: Duration.zero);
     });

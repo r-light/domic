@@ -98,6 +98,10 @@ class Bainian extends Parser {
       path: "$searchBase$name/$page.html",
       method: "GET",
     ));
+    return parsePageHelper(resp);
+  }
+
+  ComicPageData parsePageHelper(MapEntry<int, Response<dynamic>?> resp) {
     var content = resp.value?.data.toString() ?? "";
     var doc = parse(content);
     // parse page
@@ -123,12 +127,27 @@ class Bainian extends Parser {
     });
     return ComicPageData(pageCount, list);
   }
-}
 
-// void main() async {
-//   var pageData = await Gufeng().comicByName("重", 1);
-//   print(pageData.pageCount);
-//   var comicInfo = await Bainian().comicById(pageData.records[0].id);
-//   await Bainian().comicByChapter(comicInfo, idx: 0);
-//   print(comicInfo.chapters[0].images[0].src);
-// }
+  Future<List<MapEntry<String, String>>> getComicTabs() async {
+    var resp = await MyDio().getHtml(
+      RequestOptions(path: domainBase, method: "GET"),
+    );
+    var content = resp.value?.data.toString();
+    var doc = parse(content);
+    List<MapEntry<String, String>> res = [];
+    doc.querySelectorAll(".warp>ul>li").forEach((element) {
+      var href = element.firstChild?.attributes["href"] ?? "";
+      var text = trimAllLF(element.text);
+      res.add(MapEntry(text, href));
+    });
+
+    return res.sublist(1);
+  }
+
+  Future<ComicPageData> comicByTab(String path, int page) async {
+    var resp = await MyDio().getHtml(
+      RequestOptions(path: path, baseUrl: domainBase, method: "GET"),
+    );
+    return parsePageHelper(resp);
+  }
+}

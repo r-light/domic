@@ -61,4 +61,10 @@ class Routes {
   static const String myAboutMeRoute = "MyAboutMe";
   static const String myComicHomeRoute = "MyComicHome";
   static const String myComicTagRoute = "MyComicTag";
+  static const routes = {
+    ConstantString.pufei: myComicTagRoute,
+    ConstantString.gufeng: myComicTagRoute,
+    ConstantString.bainian: myComicTagRoute,
+    ConstantString.jmtt: myComicTagRoute,
+  };
 }
