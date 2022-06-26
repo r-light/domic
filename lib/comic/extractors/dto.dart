@@ -9,6 +9,7 @@ const sourcesName = {
   "jmtt": "禁漫天堂",
   "gufeng": "古风漫画",
   "bainian": "百年漫画",
+  "qimiao": "奇妙漫画",
 };
 
 @HiveType(typeId: 1)

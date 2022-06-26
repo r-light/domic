@@ -1,6 +1,9 @@
+import 'package:domic/comic/api.dart';
+import 'package:domic/comic/extractors/dio.dart';
 import 'package:domic/comic/extractors/dto.dart';
 import 'package:domic/common/global.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 
 class MyComicSource extends StatefulWidget {
@@ -74,7 +77,10 @@ class _MyComicSourceState extends State<MyComicSource> {
                     icon: const Icon(
                       Icons.save,
                     ),
-                  )
+                  ), // test all sources
+                  IconButton(
+                      onPressed: () => checkSource(context),
+                      icon: const Icon(Icons.checklist)),
                 ],
                 bottom: TabBar(
                   isScrollable: false,
@@ -99,6 +105,56 @@ class _MyComicSourceState extends State<MyComicSource> {
   void setCurrentIndex(int idx) {
     _currentIndex = idx;
   }
+
+  void checkSource(BuildContext context) async {
+    var map = tabs[_currentIndex] == "常规"
+        ? Provider.of<ComicSource>(context, listen: false).sourceMap
+        : Provider.of<ComicSource>(context, listen: false).source18Map;
+    var setter = tabs[_currentIndex] == "常规"
+        ? Provider.of<ComicSource>(context, listen: false)
+            .reverseSourceOrDefault
+        : Provider.of<ComicSource>(context, listen: false)
+            .reverseSource18OrDefault;
+
+    EasyLoading.showInfo("测试中");
+    List<Future<bool>> futures = [];
+    for (var source in map.keys) {
+      futures.add(checkSourceHelper(source));
+    }
+    var active = await Future.wait(futures);
+    EasyLoading.showSuccess("测试完成", dismissOnTap: true);
+    int idx = 0;
+    map.keys.forEach(((e) {
+      setter(e, active: active[idx]);
+      idx++;
+    }));
+  }
+
+  Future<bool> checkSourceHelper(String source) async {
+    var parser = comicMethod[source] ?? comic18Method[source]!;
+    String name = comicMethod.containsKey(source) ? "一人之下" : "继母的朋友们";
+    try {
+      var pageData = await parser.comicByName(name, 1);
+      if (pageData.records.isEmpty) {
+        return false;
+      }
+      var comicInfo = await parser.comicById(pageData.records.first.id);
+      if (comicInfo.chapters.isEmpty) {
+        return false;
+      }
+      await parser.comicByChapter(comicInfo, idx: 0);
+      if (comicInfo.chapters[0].len == 0) {
+        return false;
+      }
+      var resp = await MyDio().dio.get(comicInfo.chapters[0].images[0].src);
+      if (resp.statusCode != 200) {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+    return true;
+  }
 }
 
 class MySourceLayout extends StatefulWidget {
@@ -121,8 +177,8 @@ class MySourceLayoutState extends State<MySourceLayout> {
     var idx = DefaultTabController.of(context)?.index ?? 0;
     widget.setter(idx);
     Map<String, bool> sourceMap = idx == 0
-        ? context.watch<ComicSource>().sourceMap
-        : context.watch<ComicSource>().source18Map;
+        ? Provider.of<ComicSource>(context, listen: true).sourceMap
+        : Provider.of<ComicSource>(context, listen: true).source18Map;
     var func = idx == 0
         ? Provider.of<ComicSource>(context, listen: false)
             .reverseSourceOrDefault

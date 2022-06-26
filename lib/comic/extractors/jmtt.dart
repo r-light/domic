@@ -63,6 +63,7 @@ class Jmtt extends Parser {
       imgs.add(ImageInfo(src)..pid = pid);
     });
     chapter.images = imgs;
+    chapter.len = imgs.length;
   }
 
   @override

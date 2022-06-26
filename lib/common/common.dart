@@ -15,11 +15,13 @@ class ConstantString {
   static const jmtt = "jmtt";
   static const gufeng = "gufeng";
   static const bainian = "bainian";
+  static const qimiao = "qimiao";
 
   static const pufeiCacheBox = "pufeiCacheLazy";
   static const jmttCacheBox = "jmttCacheLazy";
   static const gufengCacheBox = "gufengCacheLazy";
   static const bainianCacheBox = "bainianCacheLazy";
+  static const qimiaoCacheBox = "qimiaoCacheLazy";
 
   static const comicBox = "comic";
   static const propertyBox = "property";
@@ -31,14 +33,16 @@ class ConstantString {
     pufeiCacheBox,
     jmttCacheBox,
     gufengCacheBox,
-    bainianCacheBox
+    bainianCacheBox,
+    qimiaoCacheBox
   ];
 
   static const sourceToLazyBox = {
     pufei: pufeiCacheBox,
     jmtt: jmttCacheBox,
     gufeng: gufengCacheBox,
-    bainian: bainianCacheBox
+    bainian: bainianCacheBox,
+    qimiao: qimiaoCacheBox
   };
 
   static const readerDirectionName = ["从上到下", "从左到右", "从右到左"];
