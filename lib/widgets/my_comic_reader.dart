@@ -73,12 +73,11 @@ class _ScrollReaderState extends State<ScrollReader> {
   late bool _isLoading;
   late bool _hasMore;
   late int nextEp;
-  final List<ImageInfo> imageInfos = [];
-  final List<int> indexes = [];
+  final List<MapEntry<int, ImageInfo>> imageInfos = [];
   final List<MapEntry<int, int>> aidScrambleId = [];
+  final List<double> sum = [];
   late final maxHeight = MediaQuery.of(context).size.height;
   late final maxWidth = MediaQuery.of(context).size.width;
-
   late final maxStatusHeightInJmtt = maxHeight / 3;
   late final maxStatusHeight = maxHeight / 5;
   late Axis axis;
@@ -86,34 +85,22 @@ class _ScrollReaderState extends State<ScrollReader> {
   void _onScroll() {
     int idx = 0;
     double offset = _controller.offset;
-    double current = 0;
-    while (idx < imageInfos.length) {
-      if (widget.content["source"] == ConstantString.jmtt) {
-        current = axis == Axis.vertical
-            ? (getRealHeight(maxWidth, imageInfos[idx].width,
-                imageInfos[idx].height, maxStatusHeightInJmtt))
-            : maxWidth;
-      } else {
-        current = axis == Axis.vertical
-            ? (getRealHeight(maxWidth, imageInfos[idx].width,
-                imageInfos[idx].height, maxStatusHeight))
-            : maxWidth;
-      }
-      offset -= current;
+    while (idx < sum.length) {
+      offset -= sum[idx];
       if (offset <= 0) {
         break;
       }
       idx++;
     }
-    int offsetIdx = indexes[idx] - (widget.content["index"] as int);
+    if (idx >= sum.length) idx--;
     if (widget.content["reversed"]) {
       Hive.box(ConstantString.comicBox).put(
           Global.indexKey(widget.content["comicSimple"]),
-          widget.content["index"] + offsetIdx);
+          widget.content["index"] + idx);
     } else {
       Hive.box(ConstantString.comicBox).put(
           Global.indexKey(widget.content["comicSimple"]),
-          widget.content["reversedIndex"] - offsetIdx);
+          widget.content["reversedIndex"] - idx);
     }
   }
 
@@ -134,6 +121,22 @@ class _ScrollReaderState extends State<ScrollReader> {
     super.dispose();
   }
 
+  void setter(int idx, int width, int height) {
+    double real = 0, placeholder = 0;
+    if (widget.content["source"] == ConstantString.jmtt) {
+      real = axis == Axis.vertical
+          ? (getRealHeight(maxWidth, width, height, maxStatusHeightInJmtt))
+          : maxWidth;
+      placeholder = axis == Axis.vertical ? maxStatusHeightInJmtt : maxWidth;
+    } else {
+      real = axis == Axis.vertical
+          ? (getRealHeight(maxWidth, width, height, maxStatusHeight))
+          : maxWidth;
+      placeholder = axis == Axis.vertical ? maxStatusHeight : maxWidth;
+    }
+    sum[idx] += real - placeholder;
+  }
+
   void loadNextEpisode() async {
     _isLoading = true;
     ComicInfo comicInfo = widget.content["comicInfo"];
@@ -149,11 +152,19 @@ class _ScrollReaderState extends State<ScrollReader> {
     }
     Future.delayed(Duration.zero, () {
       setState(() {
+        sum.add(0);
         for (var imageInfo in comicInfo.chapters[nextEp].images) {
-          imageInfos.add(imageInfo);
-          indexes.add(nextEp);
+          imageInfos.add(
+              MapEntry(nextEp - (widget.content["index"] as int), imageInfo));
           aidScrambleId.add(MapEntry(comicInfo.chapters[nextEp].aid ?? 0,
               comicInfo.chapters[nextEp].scrambleId ?? 0));
+          if (widget.content["source"] == ConstantString.jmtt) {
+            sum[sum.length - 1] +=
+                axis == Axis.vertical ? maxStatusHeightInJmtt : maxWidth;
+          } else {
+            sum[sum.length - 1] +=
+                axis == Axis.vertical ? maxStatusHeight : maxWidth;
+          }
         }
         _isLoading = false;
         nextEp++;
@@ -197,7 +208,9 @@ class _ScrollReaderState extends State<ScrollReader> {
           }
           if (widget.content["source"] == ConstantString.jmtt) {
             return MyJmttComicImage(
-              imageInfo: imageInfos[index],
+              imageInfo: imageInfos[index].value,
+              index: imageInfos[index].key,
+              setter: setter,
               source: widget.content["source"],
               aid: aidScrambleId[index].key,
               scrambleId: aidScrambleId[index].value,
@@ -205,17 +218,17 @@ class _ScrollReaderState extends State<ScrollReader> {
               statusWidth: maxWidth,
               statusHeight: axis == Axis.horizontal
                   ? maxHeight
-                  : getRealHeight(maxWidth, imageInfos[index].width,
-                      imageInfos[index].height, maxStatusHeightInJmtt),
+                  : getRealHeight(maxWidth, imageInfos[index].value.width,
+                      imageInfos[index].value.height, maxStatusHeightInJmtt),
             );
           } else {
-            return normalImageWidget(imageInfos[index],
+            return normalImageWidget(imageInfos[index], setter,
                 width: maxWidth,
                 statusWidth: maxWidth,
                 statusHeight: axis == Axis.horizontal
                     ? maxHeight
-                    : getRealHeight(maxWidth, imageInfos[index].width,
-                        imageInfos[index].height, maxStatusHeight)
+                    : getRealHeight(maxWidth, imageInfos[index].value.width,
+                        imageInfos[index].value.height, maxStatusHeight)
                 // maxHeight / 5,
                 );
           }

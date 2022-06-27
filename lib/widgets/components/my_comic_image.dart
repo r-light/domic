@@ -82,11 +82,12 @@ Widget error(double? width, double? height) {
       ));
 }
 
-Widget normalImageWidget(ImageInfo info,
+Widget normalImageWidget(MapEntry<int, ImageInfo> entry, dynamic setter,
     {double? height,
     double? width,
     double? statusWidth,
     double? statusHeight}) {
+  var info = entry.value;
   return ExtendedImage.network(
     info.src,
     height: height,
@@ -98,6 +99,9 @@ Widget normalImageWidget(ImageInfo info,
       if (state.extendedImageLoadState == LoadState.failed) {
         return Container();
       }
+      if (info.height == null && info.width == null) {
+        setter(entry.key, state.extendedImageInfo!.image.width, state.extendedImageInfo!.image.height);
+      }
       info.height = state.extendedImageInfo!.image.height;
       info.width = state.extendedImageInfo!.image.width;
       return null;
@@ -108,16 +112,20 @@ Widget normalImageWidget(ImageInfo info,
 class MyJmttComicImage extends StatefulWidget {
   final ImageInfo imageInfo;
   final String source;
+  final int index;
   final int? scrambleId;
   final int? aid;
   final double? height;
   final double? width;
   final double? statusHeight;
   final double? statusWidth;
+  final dynamic setter;
 
   const MyJmttComicImage({
     Key? key,
     required this.imageInfo,
+    required this.setter,
+    required this.index,
     required this.source,
     this.scrambleId,
     this.aid,
@@ -166,7 +174,8 @@ class _MyJmttComicImageState extends State<MyJmttComicImage>
     // jmtt
     if (widget.source == ConstantString.jmtt) {
       if (widget.aid! < widget.scrambleId!) {
-        return normalImageWidget(widget.imageInfo,
+        return normalImageWidget(
+            MapEntry(widget.index, widget.imageInfo), widget.setter,
             width: widget.width,
             height: widget.height,
             statusWidth: widget.statusWidth,
@@ -190,7 +199,8 @@ class _MyJmttComicImageState extends State<MyJmttComicImage>
         },
       );
     } else {
-      return normalImageWidget(widget.imageInfo,
+      return normalImageWidget(
+          MapEntry(widget.index, widget.imageInfo), widget.setter,
           width: widget.width,
           height: widget.height,
           statusWidth: widget.statusWidth,
