@@ -236,13 +236,22 @@ class _MyReadSettingState extends State<MyReadSetting> {
             children: [const Text("修改阅读方向"), readerDirWidget()],
           ),
         ),
-        // 缓存大小
+        // 网格模式显示漫画信息
+        ListTile(
+          minVerticalPadding: 4,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [const Text("网格模式显示漫画信息"), showFooter()],
+          ),
+        ),
+        // 常规图源缓存
         ListTile(
           title: const Text('常规图源缓存'),
           subtitle: Text(
               "当前缓存: ${context.select((Configs configs) => configs.cacheImageNum)}"),
           onTap: () async {
-            int? count = await showListDialog(context, "缓存数目");
+            int? count = await showListDialog(
+                context, "缓存数目", List.generate(10, (index) => (index + 1)));
             if (count == null) return;
             if (!mounted) return;
             Provider.of<Configs>(context, listen: false).cacheImageNum = count;
@@ -250,13 +259,14 @@ class _MyReadSettingState extends State<MyReadSetting> {
             Global.showSnackBar("设置成功");
           },
         ),
-        // 限制历史数目
+        // 18+图源缓存
         ListTile(
           title: const Text('18+图源缓存'),
           subtitle: Text(
               "当前缓存: ${context.select((Configs configs) => configs.cacheImage18Num)}"),
           onTap: () async {
-            int? count = await showListDialog(context, "缓存数目");
+            int? count = await showListDialog(
+                context, "缓存数目", List.generate(10, (index) => index + 1));
             if (count == null) return;
             if (!mounted) return;
             Provider.of<Configs>(context, listen: false).cacheImage18Num =
@@ -265,7 +275,52 @@ class _MyReadSettingState extends State<MyReadSetting> {
             Global.showSnackBar("设置成功");
           },
         ),
+        // 设置crossAxisCountInSearchAndTag
+        ListTile(
+          title: const Text('每行展示漫画数目(网格模式)'),
+          subtitle: Text(
+              "当前数目: ${context.select((Configs configs) => configs.crossAxisCountInSearchAndTag)}"),
+          onTap: () async {
+            int? count = await showListDialog(
+                context, "当前数目", List.generate(5, (index) => index + 1));
+            if (count == null) return;
+            if (!mounted) return;
+            Provider.of<Configs>(context, listen: false)
+                .crossAxisCountInSearchAndTag = count;
+            if (!mounted) return;
+            Global.showSnackBar("设置成功");
+          },
+        ),
       ],
+    );
+  }
+
+  Widget showFooter() {
+    return DropdownButton<bool>(
+      underline: const SizedBox(),
+      // Initial Value
+      value: context.select((Configs config) => config.showFooterInGridView),
+      // Down Arrow Icon
+      icon: const Icon(Icons.keyboard_arrow_down),
+      // Array list of items
+      items: const [
+        DropdownMenuItem(
+          value: true,
+          child: Text("是"),
+        ),
+        DropdownMenuItem(
+          value: false,
+          child: Text("否"),
+        )
+      ],
+      // After selecting the desired option,it will
+      // change button value to selected value
+      onChanged: (bool? value) {
+        if (value != null) {
+          Provider.of<Configs>(context, listen: false).showFooterInGridView =
+              value;
+        }
+      },
     );
   }
 
@@ -344,19 +399,20 @@ class _MyReadSettingState extends State<MyReadSetting> {
     );
   }
 
-  Future<int?> showListDialog(BuildContext context, String text) async {
-    return await showDialog<int>(
+  Future showListDialog(
+      BuildContext context, String text, List<int> list) async {
+    return await showDialog(
       context: context,
       builder: (BuildContext context) {
         return Dialog(
           child: ListView.builder(
-            itemCount: 10,
+            itemCount: list.length,
             shrinkWrap: true,
             itemBuilder: (BuildContext context, int index) {
-              int number = (index + 1) * 1;
+              var content = list[index];
               return ListTile(
-                title: Text("$number"),
-                onTap: () => Navigator.of(context).pop(number),
+                title: Text("$content"),
+                onTap: () => Navigator.of(context).pop(content),
               );
             },
           ),

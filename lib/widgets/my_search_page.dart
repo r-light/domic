@@ -91,7 +91,7 @@ class MyComicSearchPageState extends State<MyComicSearchPage> {
                     keyboardType: TextInputType.text,
                     onSubmitted: (String value) => Navigator.of(context)
                         .pushNamed(Routes.myComicSearchResultRoute,
-                            arguments: value)),
+                            arguments: {"title": value})),
               ),
               Container(
                 padding: const EdgeInsets.fromLTRB(0, 0, 10, 5),
@@ -101,7 +101,7 @@ class MyComicSearchPageState extends State<MyComicSearchPage> {
                   onPressed: () {
                     Navigator.of(context).pushNamed(
                         Routes.myComicSearchResultRoute,
-                        arguments: _searchInfo);
+                        arguments: {"title": _searchInfo});
                   },
                   child: const Icon(
                     Icons.search,

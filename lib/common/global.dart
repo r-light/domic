@@ -274,6 +274,8 @@ class Configs with ChangeNotifier {
   static const autoRefreshKey = "autoRefresh";
   static const cacheImageNumKey = "cacheImageNum";
   static const cacheImage18NumKey = "cacheImage18Num";
+  static const crossAxisCountInSearchAndTagKey = "crossAxisCountInSearchAndTag";
+  static const showFooterInGridViewKey = "showFooterInGridView";
 
   late bool _listViewInSearchResult;
   late bool _listViewInTagResult;
@@ -282,6 +284,8 @@ class Configs with ChangeNotifier {
   late bool _autoRefresh;
   late int _cacheImageNum;
   late int _cacheImage18Num;
+  late int _crossAxisCountInSearchAndTag;
+  late bool _showFooterInGridView;
   late Box box;
 
   Configs() {
@@ -294,6 +298,9 @@ class Configs with ChangeNotifier {
     _autoRefresh = box.get(autoRefreshKey) ?? true;
     _cacheImageNum = box.get(cacheImageNumKey) ?? 5;
     _cacheImage18Num = box.get(cacheImage18NumKey) ?? 3;
+    _crossAxisCountInSearchAndTag =
+        box.get(crossAxisCountInSearchAndTagKey) ?? 2;
+    _showFooterInGridView = box.get(showFooterInGridViewKey) ?? true;
   }
 
   bool get listViewInSearchResult => _listViewInSearchResult;
@@ -350,6 +357,22 @@ class Configs with ChangeNotifier {
     _cacheImage18Num = value;
     notifyListeners();
     box.put(cacheImage18NumKey, value);
+  }
+
+  int get crossAxisCountInSearchAndTag => _crossAxisCountInSearchAndTag;
+
+  set crossAxisCountInSearchAndTag(int value) {
+    _crossAxisCountInSearchAndTag = value;
+    notifyListeners();
+    box.put(crossAxisCountInSearchAndTagKey, value);
+  }
+
+  bool get showFooterInGridView => _showFooterInGridView;
+
+  set showFooterInGridView(bool value) {
+    _showFooterInGridView = value;
+    notifyListeners();
+    box.put(showFooterInGridViewKey, value);
   }
 }
 

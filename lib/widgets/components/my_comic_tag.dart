@@ -7,6 +7,7 @@ import 'package:domic/common/global.dart';
 import 'package:domic/common/hive.dart';
 import 'package:domic/widgets/components/my_comic_card.dart';
 import 'package:domic/widgets/components/my_grid_gesture_detector.dart';
+import 'package:domic/widgets/components/my_setting_action.dart';
 import 'package:domic/widgets/components/my_status.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -95,6 +96,7 @@ class _MyComicTagState extends State<MyComicTag> {
                     icon: const Icon(Icons.list),
                   ),
             viewTypeWidget(),
+            ...alwaysInActions(),
           ],
         ),
         body: Column(
@@ -152,8 +154,9 @@ class _MyComicTagState extends State<MyComicTag> {
           itemCount: hasMore ? records.length + 1 : records.length);
     } else {
       return GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: context.select(
+              (Configs configs) => configs.crossAxisCountInSearchAndTag),
           crossAxisSpacing: 5.0,
           mainAxisSpacing: 5.0,
           childAspectRatio: 4 / 5,

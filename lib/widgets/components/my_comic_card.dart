@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:domic/comic/extractors/dto.dart';
+import 'package:domic/common/global.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class ComicSimpleItem extends StatelessWidget {
   const ComicSimpleItem({
@@ -14,7 +16,7 @@ class ComicSimpleItem extends StatelessWidget {
   final bool isList;
   static const double fontSize = 12;
 
-  Widget listItem() {
+  Widget listItem(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -74,39 +76,42 @@ class ComicSimpleItem extends StatelessWidget {
     );
   }
 
-  Widget gridItem() {
+  Widget gridItem(BuildContext context) {
     return GridTile(
-      footer: Container(
-        color: Colors.white54,
-        child: Column(children: [
-          Text(
-            comicSimple.title,
-            style: const TextStyle(color: Colors.black, fontSize: fontSize),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            // overflow: TextOverflow.ellipsis,
-          ),
-          Text(
-            comicSimple.author,
-            style: TextStyle(color: Colors.grey[800], fontSize: fontSize),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-          ),
-          Text(
-            comicSimple.sourceName,
-            style: TextStyle(color: Colors.grey[800], fontSize: fontSize),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-          ),
-        ]),
-      ),
+      footer: context.select((Configs config) => config.showFooterInGridView)
+          ? Container(
+              color: Colors.white54,
+              child: Column(children: [
+                Text(
+                  comicSimple.title,
+                  style:
+                      const TextStyle(color: Colors.black, fontSize: fontSize),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  // overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  comicSimple.author,
+                  style: TextStyle(color: Colors.grey[800], fontSize: fontSize),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                ),
+                Text(
+                  comicSimple.sourceName,
+                  style: TextStyle(color: Colors.grey[800], fontSize: fontSize),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                ),
+              ]),
+            )
+          : Container(),
       child: cacheImg(comicSimple.thumb),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return isList ? listItem() : gridItem();
+    return isList ? listItem(context) : gridItem(context);
   }
 
   Widget cacheImg(String url) {

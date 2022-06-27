@@ -7,6 +7,7 @@ import 'package:domic/common/global.dart';
 import 'package:domic/common/hive.dart';
 import 'package:domic/widgets/components/my_comic_card.dart';
 import 'package:domic/widgets/components/my_grid_gesture_detector.dart';
+import 'package:domic/widgets/components/my_setting_action.dart';
 import 'package:domic/widgets/components/my_status.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -37,46 +38,73 @@ class _MyComicSearchResultState extends State<MyComicSearchResult> {
   // load more comicSimple
   void loadMoreComicSimple() async {
     isLoading = true;
-    String text = widget.content;
-    var entries = Provider.of<ComicSource>(context, listen: false)
-        .sourceMap
-        .entries
-        .toList()
-      ..addAll(
-          Provider.of<ComicSource>(context, listen: false).source18Map.entries);
-    var futures = <Future>[];
-    for (var e in entries) {
-      if (e.value) {
-        var source = e.key;
-        maxPageMap.putIfAbsent(source, () => 1);
-        if (currentPage > maxPageMap[source]!) continue;
-        var lazyBoxName = ConstantString.sourceToLazyBox[source]!;
-        var key = comicSimplePageKey(source, text, currentPage);
-        if (MyHive()
-            .isInHive(lazyBoxName, key, dur: const Duration(hours: 12))) {
-          futures.add(MyHive().getInHive(lazyBoxName, key));
-        } else {
-          var parser = comicMethod[source] ?? comic18Method[source]!;
-          futures.add(parser.comicByName(text, currentPage).then((pager) {
-            MyHive().putInHive(lazyBoxName, key, pager);
-            return pager;
-          }));
-        }
+    String text = widget.content["title"];
+    if (widget.content.containsKey("source")) {
+      String source = widget.content["source"];
+      var lazyBoxName = ConstantString.sourceToLazyBox[source]!;
+      var key = comicSimplePageKey(source, text, currentPage);
+      Future future;
+      if (MyHive().isInHive(lazyBoxName, key, dur: const Duration(hours: 12))) {
+        future = MyHive().getInHive(lazyBoxName, key);
+      } else {
+        var parser = comicMethod[source] ?? comic18Method[source]!;
+        future = parser.comicByName(text, currentPage).then((pager) {
+          MyHive().putInHive(lazyBoxName, key, pager);
+          return pager;
+        });
       }
-    }
-    var pagers = await Future.wait(futures);
-    for (var page in pagers) {
-      if (page.records.isEmpty) continue;
-      maxPageMap[page.records.first.source] =
-          max(maxPageMap[page.records.first.source]!, page.pageCount);
+      var page = (await future) as ComicPageData;
       records.addAll(page.records);
-      maxPage = max(maxPage, maxPageMap[page.records.first.source]!);
+      maxPage = max(maxPage, page.pageCount);
       if (currentPage == 1) {
         if (page.maxNum == null) {
-          totalNum += maxPageMap[page.records.first.source]! *
-              (page.records.length as int);
+          totalNum += page.records.length * page.records.length;
         } else {
-          totalNum += page.maxNum as int;
+          totalNum += page.maxNum!;
+        }
+      }
+    } else {
+      var entries = Provider.of<ComicSource>(context, listen: false)
+          .sourceMap
+          .entries
+          .toList()
+        ..addAll(Provider.of<ComicSource>(context, listen: false)
+            .source18Map
+            .entries);
+      var futures = <Future>[];
+      for (var e in entries) {
+        if (e.value) {
+          var source = e.key;
+          maxPageMap.putIfAbsent(source, () => 1);
+          if (currentPage > maxPageMap[source]!) continue;
+          var lazyBoxName = ConstantString.sourceToLazyBox[source]!;
+          var key = comicSimplePageKey(source, text, currentPage);
+          if (MyHive()
+              .isInHive(lazyBoxName, key, dur: const Duration(hours: 12))) {
+            futures.add(MyHive().getInHive(lazyBoxName, key));
+          } else {
+            var parser = comicMethod[source] ?? comic18Method[source]!;
+            futures.add(parser.comicByName(text, currentPage).then((pager) {
+              MyHive().putInHive(lazyBoxName, key, pager);
+              return pager;
+            }));
+          }
+        }
+      }
+      var pagers = await Future.wait(futures);
+      for (var page in pagers) {
+        if (page.records.isEmpty) continue;
+        maxPageMap[page.records.first.source] =
+            max(maxPageMap[page.records.first.source]!, page.pageCount);
+        records.addAll(page.records);
+        maxPage = max(maxPage, maxPageMap[page.records.first.source]!);
+        if (currentPage == 1) {
+          if (page.maxNum == null) {
+            totalNum += maxPageMap[page.records.first.source]! *
+                (page.records.length as int);
+          } else {
+            totalNum += page.maxNum as int;
+          }
         }
       }
     }
@@ -101,7 +129,7 @@ class _MyComicSearchResultState extends State<MyComicSearchResult> {
     return Scaffold(
         appBar: AppBar(
           elevation: 0.0,
-          title: Text(widget.content, textAlign: TextAlign.left),
+          title: Text(widget.content["title"], textAlign: TextAlign.left),
           centerTitle: false,
           actions: [
             context.select((Configs configs) => configs.listViewInSearchResult)
@@ -112,7 +140,8 @@ class _MyComicSearchResultState extends State<MyComicSearchResult> {
                 : IconButton(
                     onPressed: () => changeView(context),
                     icon: const Icon(Icons.list),
-                  )
+                  ),
+            ...alwaysInActions()
           ],
         ),
         body: Column(
@@ -135,6 +164,7 @@ class _MyComicSearchResultState extends State<MyComicSearchResult> {
   }
 
   int getActiveSourceLength(BuildContext context) {
+    if (widget.content.containsKey("source")) return 1;
     var map = Provider.of<ComicSource>(context, listen: false).sourceMap;
     int len = 0;
     map.forEach((key, value) {
@@ -183,8 +213,9 @@ class _MyComicSearchResultState extends State<MyComicSearchResult> {
           itemCount: hasMore ? records.length + 1 : records.length);
     } else {
       return GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: context.select(
+              (Configs configs) => configs.crossAxisCountInSearchAndTag),
           crossAxisSpacing: 5.0,
           mainAxisSpacing: 5.0,
           childAspectRatio: 4 / 5,

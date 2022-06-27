@@ -119,7 +119,7 @@ class Jmtt extends Parser {
 
     var author = "";
     for (var element in authors) {
-      author += element;
+      author += "$element ";
     }
     author = trimAllLF(author);
     var updateDate = "", uploadDate = "", views = "", star = "";

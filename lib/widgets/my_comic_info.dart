@@ -93,7 +93,7 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
             ),
             onPressed: () {
               Navigator.of(context).pushNamed(Routes.myComicSearchResultRoute,
-                  arguments: record.title);
+                  arguments: {"title": record.title, "source": record.source});
             },
           ),
           ...alwaysInActions()
@@ -243,9 +243,11 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
                       record.title,
                       style: const TextStyle(fontSize: 14, color: Colors.white),
                     ),
-                    onTap: () => Navigator.of(context).pushNamed(
-                        Routes.myComicSearchResultRoute,
-                        arguments: record.title),
+                    onTap: () => Navigator.of(context)
+                        .pushNamed(Routes.myComicSearchResultRoute, arguments: {
+                      "title": record.title,
+                      "source": record.source
+                    }),
                   ),
                   const Padding(padding: EdgeInsets.symmetric(vertical: 2.0)),
                   Row(
@@ -261,8 +263,11 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
                             ),
                             onTap: () => Navigator.of(context).pushNamed(
                                 Routes.myComicSearchResultRoute,
-                                arguments:
-                                    snapshot.data?.author ?? record.author),
+                                arguments: {
+                                  "title":
+                                      snapshot.data?.author ?? record.author,
+                                  "source": record.source
+                                }),
                           ),
                         ),
                         GestureDetector(
