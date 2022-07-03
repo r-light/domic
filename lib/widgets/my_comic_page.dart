@@ -93,6 +93,7 @@ class MyComicLayoutState extends State<MyComicLayout>
   // final int crossAxisCount = 3;
   // final double titleFontSize = 12;
   // final double sourceFontSize = 12;
+  
   void checkVersionHelper() {
     checkVersion().then((shouldUpdate) {
       if (shouldUpdate) {
@@ -334,7 +335,7 @@ class MyComicLayoutState extends State<MyComicLayout>
   void _onLoading() {
     EasyLoading.showInfo(
       '正在查询漫画更新',
-      duration: const Duration(minutes: 1),
+      duration: const Duration(seconds: 20),
       dismissOnTap: false,
     );
   }

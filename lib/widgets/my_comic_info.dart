@@ -32,8 +32,11 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
   late Future<ComicInfo> _comicInfo =
       loadComicInfo(dur: const Duration(hours: 1));
   ComicInfo? _comicInfoRes;
-  late bool _reversed;
-  int? _index;
+  late bool _reversed = Hive.box(ConstantString.comicBox)
+          .get(Global.reversedKey(widget.content["record"])) ??
+      false;
+  late int? _index = Hive.box(ConstantString.comicBox)
+      .get(Global.indexKey(widget.content["record"]));
   int? _length;
 
   void saveIndex(ComicSimple record) {
@@ -43,6 +46,16 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
   void saveReversed(ComicSimple record) async {
     Hive.box(ConstantString.comicBox)
         .put(Global.reversedKey(record), _reversed);
+  }
+
+  int? getLength(ComicSimple record) {
+    return Hive.box(ConstantString.comicBox)
+        .get("${Global.indexKey(record)}_length");
+  }
+
+  void saveLength(ComicSimple record, int length) {
+    Hive.box(ConstantString.comicBox)
+        .put("${Global.indexKey(record)}_length", length);
   }
 
   Future<ComicInfo> loadComicInfo(
@@ -61,6 +74,14 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
       MyHive().putInHive(lazyBoxName, key, info);
     }
     Hive.box(ConstantString.comicBox).put(key, info);
+    var oldLength = getLength(record);
+    if (oldLength != null && info.chapters.length != oldLength) {
+      if (!_reversed && _index != null) {
+        _index = info.chapters.length - oldLength + _index!;
+        saveIndex(record);
+      }
+    }
+    saveLength(record, info.chapters.length);
     return info;
   }
 
