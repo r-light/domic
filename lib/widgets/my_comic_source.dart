@@ -21,6 +21,7 @@ class _MyComicSourceState extends State<MyComicSource> {
   Widget build(BuildContext context) {
     return WillPopScope(
         child: DefaultTabController(
+            initialIndex: 0,
             length: tabs.length,
             child: Scaffold(
               appBar: AppBar(
@@ -71,13 +72,15 @@ class _MyComicSourceState extends State<MyComicSource> {
                       Icons.remove_done,
                     ),
                   ),
+                  // save sources
                   IconButton(
                     onPressed: () =>
                         Provider.of<ComicSource>(context, listen: false).save(),
                     icon: const Icon(
                       Icons.save,
                     ),
-                  ), // test all sources
+                  ),
+                  // test all sources
                   IconButton(
                       onPressed: () => checkSource(context),
                       icon: const Icon(Icons.checklist)),
@@ -88,12 +91,17 @@ class _MyComicSourceState extends State<MyComicSource> {
                 ),
               ),
               body: TabBarView(
-                children: tabs.map((e) {
-                  return MySourceLayout(
-                    name: e,
-                    setter: setCurrentIndex,
-                  );
-                }).toList(),
+                children: tabs
+                    .asMap()
+                    .map((k, v) => MapEntry(
+                        k,
+                        MySourceLayout(
+                          name: v,
+                          setter: setCurrentIndex,
+                          tabIndex: k,
+                        )))
+                    .values
+                    .toList(),
               ),
             )),
         onWillPop: () async {
@@ -158,9 +166,14 @@ class _MyComicSourceState extends State<MyComicSource> {
 }
 
 class MySourceLayout extends StatefulWidget {
-  const MySourceLayout({Key? key, required this.name, required this.setter})
+  const MySourceLayout(
+      {Key? key,
+      required this.name,
+      required this.setter,
+      required this.tabIndex})
       : super(key: key);
   final String name;
+  final int tabIndex;
   final ValueSetter<int> setter;
   @override
   State<StatefulWidget> createState() => MySourceLayoutState();
@@ -174,7 +187,7 @@ class MySourceLayoutState extends State<MySourceLayout> {
 
   @override
   Widget build(BuildContext context) {
-    var idx = DefaultTabController.of(context)?.index ?? 0;
+    var idx = widget.tabIndex;
     widget.setter(idx);
     Map<String, bool> sourceMap = idx == 0
         ? Provider.of<ComicSource>(context, listen: true).sourceMap

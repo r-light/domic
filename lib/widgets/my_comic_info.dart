@@ -130,7 +130,6 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
         ) {
           return Column(children: [
             comicSimpleCard(context, snapshot),
-            // comicChapterGrid(context, snapshot)
             Expanded(child: comicChapterGrid(context, snapshot)),
           ]);
         },
@@ -309,8 +308,8 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
                         )
                       ]),
                   const Padding(padding: EdgeInsets.symmetric(vertical: 2.0)),
-                  SizedBox(
-                    height: 100,
+                  LimitedBox(
+                    maxHeight: 100,
                     child: SingleChildScrollView(
                       child: Text(
                         snapshot.data?.description ?? "",
