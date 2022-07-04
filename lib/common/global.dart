@@ -11,6 +11,11 @@ import 'package:url_launcher/url_launcher.dart';
 class Global {
   const Global._();
   static late final String defaultCover;
+  static final downloading = <String, int>{};
+
+  static String comicChapterKey(String source, String id, int idx) {
+    return "$source$id@$idx";
+  }
 
   static String comicSimpleKey(ComicSimple item) {
     return item.id + item.source;

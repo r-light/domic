@@ -92,33 +92,54 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
     _reversed = Hive.box(ConstantString.comicBox)
             .get(Global.reversedKey(widget.content["record"])) ??
         false;
-
     ComicSimple record = widget.content["record"];
+    var actions = [
+      IconButton(
+        icon: const Icon(
+          Icons.source,
+        ),
+        onPressed: () =>
+            Navigator.pushNamed(context, Routes.myComicSourceRoute),
+      ),
+      IconButton(
+        icon: const Icon(
+          Icons.search,
+          color: Colors.white,
+        ),
+        onPressed: () {
+          Navigator.of(context).pushNamed(Routes.myComicSearchResultRoute,
+              arguments: {"title": record.title});
+        },
+      ),
+      ...alwaysInActions()
+    ];
+    if (comic18Method.containsKey(record.source)) {
+      actions.insert(
+          0,
+          IconButton(
+              icon: const Icon(
+                Icons.download,
+              ),
+              onPressed: () {
+                var cloned =
+                    ComicInfo.fromJson(jsonDecode(jsonEncode(_comicInfoRes)));
+                var seqList = _comicInfoRes!.chapters.reversed.toList();
+                cloned.chapters = seqList;
+                Navigator.pushNamed(context, Routes.myDownloadRoute,
+                    arguments: {
+                      "comicInfo": cloned,
+                      "source": record.source,
+                      "lazyboxName": ConstantString.comic18DownloadBox,
+                    });
+              }));
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(record.title),
         elevation: 0.0,
         centerTitle: false,
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.source,
-            ),
-            onPressed: () =>
-                Navigator.pushNamed(context, Routes.myComicSourceRoute),
-          ),
-          IconButton(
-            icon: const Icon(
-              Icons.search,
-              color: Colors.white,
-            ),
-            onPressed: () {
-              Navigator.of(context).pushNamed(Routes.myComicSearchResultRoute,
-                  arguments: {"title": record.title});
-            },
-          ),
-          ...alwaysInActions()
-        ],
+        actions: actions,
       ),
       body: FutureBuilder<ComicInfo>(
         initialData: Hive.box(ConstantString.comicBox)
@@ -158,7 +179,7 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
       // history
       FloatingActionButton(
         onPressed: () {
-          if (_index == null) return;
+          if (_index == null || _comicInfoRes == null) return;
           var cloned =
               ComicInfo.fromJson(jsonDecode(jsonEncode(_comicInfoRes)));
           var seqList = _comicInfoRes!.chapters.reversed.toList();

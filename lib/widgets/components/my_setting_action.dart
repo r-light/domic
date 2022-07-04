@@ -92,7 +92,7 @@ class _MyGeneralSettingState extends State<MyGeneralSetting> {
         ),
         // 删除历史记录
         ListTile(
-          title: const Text('删除历史记录'),
+          title: const Text('删除历史'),
           onTap: () async {
             Global.showSnackBar("正在清除");
             await Provider.of<ComicLocal>(context, listen: false)
@@ -112,6 +112,19 @@ class _MyGeneralSettingState extends State<MyGeneralSetting> {
             await Provider.of<ComicLocal>(context, listen: false)
                 .removeAllFavorite();
             if (!mounted) return;
+            Global.showSnackBar("清除成功");
+          },
+        ),
+        // 删除下载及当前任务
+        ListTile(
+          title: const Text('删除当前任务及已下载'),
+          onTap: () async {
+            Global.showSnackBar("正在清除");
+            Global.downloading.clear();
+            for (var boxName in ConstantString.downloadBox) {
+              var box = Hive.lazyBox(boxName);
+              box.deleteAll(box.keys);
+            }
             Global.showSnackBar("清除成功");
           },
         ),

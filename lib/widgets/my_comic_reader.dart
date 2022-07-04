@@ -11,10 +11,6 @@ import 'package:provider/provider.dart';
 
 import '../common/common.dart';
 
-String comicChapterKey(String source, String id, int idx) {
-  return "$source$id@$idx";
-}
-
 class MyComicReader extends StatefulWidget {
   /*  "chapters": seqList,
       "index": _reversed ? _length! - 1 - _index! : _index!,
@@ -173,7 +169,7 @@ class _ScrollReaderState extends State<ScrollReader> {
     ComicInfo comicInfo = widget.content["comicInfo"];
     String source = widget.content["source"];
     var lazyBoxName = ConstantString.sourceToLazyBox[source]!;
-    var key = comicChapterKey(source, comicInfo.id, nextEp);
+    var key = Global.comicChapterKey(source, comicInfo.id, nextEp);
     if (MyHive().isInHive(lazyBoxName, key)) {
       comicInfo.chapters[nextEp] = await MyHive().getInHive(lazyBoxName, key);
     } else {

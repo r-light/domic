@@ -18,6 +18,9 @@ class MyHive {
     for (var name in ConstantString.lazyBoxName) {
       await Hive.openLazyBox(name);
     }
+    for (var name in ConstantString.downloadBox) {
+      await Hive.openLazyBox(name);
+    }
   }
 
   bool isInHive(String lazyBoxName, String key,

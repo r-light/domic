@@ -22,19 +22,21 @@ class ConstantString {
   static const gufengCacheBox = "gufengCacheLazy";
   static const bainianCacheBox = "bainianCacheLazy";
   static const qimiaoCacheBox = "qimiaoCacheLazy";
+  static const comic18DownloadBox = "comic18DownloadLazy";
 
   static const comicBox = "comic";
   static const propertyBox = "property";
   static const timeBox = "cacheTimeStamp";
 
   static const boxName = [propertyBox, comicBox, timeBox];
+  static const downloadBox = [comic18DownloadBox];
 
   static const lazyBoxName = [
     pufeiCacheBox,
     jmttCacheBox,
     gufengCacheBox,
     bainianCacheBox,
-    qimiaoCacheBox
+    qimiaoCacheBox,
   ];
 
   static const sourceToLazyBox = {
@@ -65,6 +67,7 @@ class Routes {
   static const String myAboutMeRoute = "MyAboutMe";
   static const String myComicHomeRoute = "MyComicHome";
   static const String myComicTagRoute = "MyComicTag";
+  static const String myDownloadRoute = "MyDownload";
   static const routes = {
     ConstantString.pufei: myComicTagRoute,
     ConstantString.gufeng: myComicTagRoute,

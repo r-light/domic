@@ -12,6 +12,7 @@ import 'package:domic/widgets/components/my_status.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide ImageInfo;
+import 'package:hive/hive.dart';
 import 'package:image/image.dart' as image_tool;
 
 double getRealHeight(
@@ -149,6 +150,7 @@ class MyJmttComicImage extends StatefulWidget {
 class _MyJmttComicImageState extends State<MyJmttComicImage>
     with AutomaticKeepAliveClientMixin {
   late Future<Uint8List> jmttBytes = loadingJmttImage();
+  late var downloadBox = Hive.lazyBox(ConstantString.comic18DownloadBox);
 
   Future<Uint8List> loadingJmttImage() async {
     if (widget.aid! < widget.scrambleId!) return Uint8List(0);
@@ -179,6 +181,31 @@ class _MyJmttComicImageState extends State<MyJmttComicImage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    if (downloadBox.containsKey(widget.imageInfo.src)) {
+      return FutureBuilder(
+        future: downloadBox.get(widget.imageInfo.src),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return error(widget.statusWidth, widget.statusHeight);
+          }
+          if (!snapshot.hasData) {
+            return waiting(widget.statusWidth, widget.statusHeight);
+          }
+          var image = Image.memory(
+            snapshot.requireData as Uint8List,
+            width: widget.width,
+            height: widget.height,
+          );
+          image.image
+              .resolve(const ImageConfiguration())
+              .addListener(ImageStreamListener((info, _) {
+            widget.imageInfo.height = info.image.height;
+            widget.imageInfo.width = info.image.width;
+          }));
+          return image;
+        },
+      );
+    }
     // jmtt
     if (widget.source == ConstantString.jmtt) {
       if (widget.aid! < widget.scrambleId!) {
