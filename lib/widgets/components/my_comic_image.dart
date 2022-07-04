@@ -151,6 +151,7 @@ class _MyJmttComicImageState extends State<MyJmttComicImage>
     with AutomaticKeepAliveClientMixin {
   late Future<Uint8List> jmttBytes = loadingJmttImage();
   late var downloadBox = Hive.lazyBox(ConstantString.comic18DownloadBox);
+  late Future downloadBytes = downloadBox.get(widget.imageInfo.src);
 
   Future<Uint8List> loadingJmttImage() async {
     if (widget.aid! < widget.scrambleId!) return Uint8List(0);
@@ -181,9 +182,10 @@ class _MyJmttComicImageState extends State<MyJmttComicImage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    // download
     if (downloadBox.containsKey(widget.imageInfo.src)) {
       return FutureBuilder(
-        future: downloadBox.get(widget.imageInfo.src),
+        future: downloadBytes,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return error(widget.statusWidth, widget.statusHeight);

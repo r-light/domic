@@ -123,8 +123,7 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
               onPressed: () {
                 var cloned =
                     ComicInfo.fromJson(jsonDecode(jsonEncode(_comicInfoRes)));
-                var seqList = _comicInfoRes!.chapters.reversed.toList();
-                cloned.chapters = seqList;
+                cloned.chapters = cloned.chapters.reversed.toList();
                 Navigator.pushNamed(context, Routes.myDownloadRoute,
                     arguments: {
                       "comicInfo": cloned,

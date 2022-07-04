@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -14,6 +15,11 @@ import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
+class ComicManagerController {
+  Future Function()? download;
+  Future Function()? delete;
+}
+
 class MyDownloadPage extends StatefulWidget {
   const MyDownloadPage({Key? key, required this.content}) : super(key: key);
   final dynamic content;
@@ -24,6 +30,7 @@ class MyDownloadPage extends StatefulWidget {
 
 class _MyDownloadPageState extends State<MyDownloadPage> {
   late var box = Hive.lazyBox(widget.content["lazyboxName"]);
+  final List<ComicManagerController> controllers = [];
   bool reversed = false;
 
   @override
@@ -33,6 +40,11 @@ class _MyDownloadPageState extends State<MyDownloadPage> {
     }
     ComicInfo comicInfo = widget.content["comicInfo"]!;
     List<Chapter> chapters = widget.content["comicInfo"]!.chapters;
+    if (controllers.isEmpty) {
+      for (int i = 0; i < chapters.length; i++) {
+        controllers.add(ComicManagerController());
+      }
+    }
 
     return Scaffold(
         appBar: AppBar(
@@ -46,22 +58,17 @@ class _MyDownloadPageState extends State<MyDownloadPage> {
               ),
               onPressed: () => setState(() {
                 reversed = !reversed;
-                comicInfo.chapters = comicInfo.chapters.reversed.toList();
               }),
             ),
             IconButton(
               icon: const Icon(
                 Icons.done_all,
               ),
-              onPressed: () {
-                for (int i = 0; i < chapters.length; i++) {
-                  var chapter = chapters[i];
-                  var downloaded = box.containsKey(chapter.url);
-                  if (downloaded) continue;
-                  if (Global.downloading.containsKey(chapter.url)) continue;
-                  Global.downloading.putIfAbsent(chapter.url, () => 0);
-                  loadEpisode(i).whenComplete(
-                      () => loadingJmttImage(comicInfo.chapters[i]));
+              onPressed: () async {
+                for (int i = 0; i < controllers.length; i++) {
+                  if (controllers[i].download != null) {
+                    await controllers[i].download!();
+                  }
                 }
               },
             ),
@@ -69,15 +76,11 @@ class _MyDownloadPageState extends State<MyDownloadPage> {
               icon: const Icon(
                 Icons.delete_sweep_sharp,
               ),
-              onPressed: () {
-                for (int i = 0; i < chapters.length; i++) {
-                  Global.downloading.remove(chapters[i].url);
-                  box.delete(chapters[i].url);
-                  loadEpisode(i).whenComplete(() {
-                    for (int j = 0; j < chapters[i].len; j++) {
-                      box.delete(chapters[i].images[j].src);
-                    }
-                  });
+              onPressed: () async {
+                for (int i = 0; i < controllers.length; i++) {
+                  if (controllers[i].delete != null) {
+                    await controllers[i].delete!();
+                  }
                 }
                 setState(() {});
               },
@@ -86,24 +89,70 @@ class _MyDownloadPageState extends State<MyDownloadPage> {
         ),
         body: ListView.builder(
           itemBuilder: (context, index) {
-            return ListTile(
-              title: Text(chapters[index].title),
-              subtitle: downloadState(chapters[index], index),
-              trailing: downloadIcon(chapters[index], index),
+            if (reversed) {
+              index = comicInfo.chapters.length - 1 - index;
+            }
+            return MyDownloadTile(
+              comicInfo: comicInfo,
+              source: widget.content["source"],
+              lazyBoxName: widget.content["lazyboxName"],
+              index: index,
+              controller: controllers[index],
             );
           },
           itemCount: chapters.length,
         ));
   }
+}
 
-  Widget downloadState(Chapter chapter, int index) {
+class MyDownloadTile extends StatefulWidget {
+  const MyDownloadTile(
+      {Key? key,
+      required this.comicInfo,
+      required this.source,
+      required this.lazyBoxName,
+      required this.index,
+      this.controller})
+      : super(key: key);
+  final ComicInfo comicInfo;
+  final String source;
+  final String lazyBoxName;
+  final int index;
+  final dynamic controller;
+
+  @override
+  State<MyDownloadTile> createState() => MyDownloadTileState();
+}
+
+class MyDownloadTileState extends State<MyDownloadTile> {
+  late var box = Hive.lazyBox(widget.lazyBoxName);
+  late var index = widget.index;
+  late var comicInfo = widget.comicInfo;
+  late var source = widget.source;
+
+  @override
+  Widget build(BuildContext context) {
+    widget.controller.download ??= loadingJmttImage;
+    widget.controller.delete ??= deleteChapter;
+    index = widget.index;
+    comicInfo = widget.comicInfo;
+    return ListTile(
+      title: Text(comicInfo.chapters[index].title),
+      subtitle: downloadState(),
+      trailing: downloadIcon(),
+    );
+  }
+
+  Widget downloadState() {
+    Chapter chapter = comicInfo.chapters[index];
     if (Global.downloading.containsKey(chapter.url)) {
       if (chapter.len == 0) {
-        loadEpisode(index).whenComplete(() => setState(() {}));
+        loadImageSrc().whenComplete(() => setState(() {}));
         return const Text("读取中...");
       }
+      int cur = min(Global.downloading[chapter.url]!, chapter.len);
       return LinearPercentIndicator(
-        percent: Global.downloading[chapter.url]! / chapter.len,
+        percent: cur / chapter.len,
         barRadius: const Radius.circular(16),
         backgroundColor: Colors.grey[300],
         progressColor: Colors.blue,
@@ -114,72 +163,64 @@ class _MyDownloadPageState extends State<MyDownloadPage> {
     }
   }
 
-  Widget downloadIcon(Chapter chapter, int index) {
+  Widget downloadIcon() {
+    Chapter chapter = comicInfo.chapters[index];
     var downloaded = box.containsKey(chapter.url);
-    ComicInfo comicInfo = widget.content["comicInfo"]!;
 
     return downloaded
         ? IconButton(
             icon: const Icon(
               Icons.delete,
             ),
-            onPressed: () => setState(() {
-              box.delete(chapter.url);
-              loadEpisode(index).whenComplete(() {
-                for (int i = 0; i < chapter.len; i++) {
-                  box.delete(chapter.images[i].src);
-                }
-              });
-            }),
+            onPressed: () async {
+              await deleteChapter();
+              setState(() {});
+            },
           )
         : IconButton(
             icon: const Icon(
               Icons.download,
             ),
             onPressed: () {
-              setState(() {
-                Global.downloading.putIfAbsent(chapter.url, () => 0);
-                loadEpisode(index).whenComplete(
-                    () => loadingJmttImage(comicInfo.chapters[index]));
-              });
+              loadingJmttImage();
+              setState(() {});
             });
   }
 
-  Future loadEpisode(int idx) async {
-    ComicInfo comicInfo = widget.content["comicInfo"]!;
-    String source = widget.content["source"];
+  Future loadImageSrc() async {
+    if (comicInfo.chapters[index].images.isNotEmpty) return;
     var lazyBoxName = ConstantString.sourceToLazyBox[source]!;
-    if (reversed) {
-      idx = comicInfo.chapters.length - 1 - idx;
-    }
-    var key = Global.comicChapterKey(source, comicInfo.id, idx);
+    var key = Global.comicChapterKey(source, comicInfo.id, index);
     if (MyHive().isInHive(lazyBoxName, key)) {
-      comicInfo.chapters[idx] = await MyHive().getInHive(lazyBoxName, key);
+      comicInfo.chapters[index] = await MyHive().getInHive(lazyBoxName, key);
     } else {
       var parser = comicMethod[source] ?? comic18Method[source]!;
-      await parser.comicByChapter(comicInfo, idx: idx);
-      MyHive().putInHive(lazyBoxName, key, comicInfo.chapters[idx]);
+      await parser.comicByChapter(comicInfo, idx: index);
+      MyHive().putInHive(lazyBoxName, key, comicInfo.chapters[index]);
     }
   }
 
-  void loadingJmttImage(Chapter chapter) async {
+  Future loadingJmttImage() async {
+    Global.downloading.putIfAbsent(comicInfo.chapters[index].url, () => 0);
+    await loadImageSrc();
+    Chapter chapter = comicInfo.chapters[index];
+    List<Future> futures = [];
     if (chapter.aid! < chapter.scrambleId!) {
       for (int i = 0; i < chapter.len; i++) {
         String url = chapter.images[i].src;
         if (box.containsKey(url)) {
           continue;
         }
-        NetworkAssetBundle(Uri.parse(url)).load(url).then((bytes) {
+        futures.add(
+            NetworkAssetBundle(Uri.parse(url)).load(url).then((bytes) async {
+          await box.put(url, bytes.buffer.asUint8List());
           setState(() {
-            box.put(url, bytes.buffer.asUint8List());
             Global.downloading[chapter.url] =
                 Global.downloading[chapter.url]! + 1;
-            downloadCompleted(chapter);
           });
-        });
+        }));
       }
     } else {
-      String source = widget.content["source"];
       var lazyBoxName = ConstantString.sourceToLazyBox[source]!;
       for (int i = 0; i < chapter.len; i++) {
         var key = chapter.images[i].src;
@@ -187,47 +228,74 @@ class _MyDownloadPageState extends State<MyDownloadPage> {
           continue;
         }
         if (MyHive().isInHive(lazyBoxName, key)) {
-          MyHive().getInHive(lazyBoxName, key).then((res) => setState(() {
-                box.put(key, res["data"]);
-                Global.downloading[chapter.url] =
-                    Global.downloading[chapter.url]! + 1;
-              }));
+          futures.add(MyHive().getInHive(lazyBoxName, key).then((res) async {
+            await box.put(key, res["data"]);
+            setState(() {
+              Global.downloading[chapter.url] =
+                  Global.downloading[chapter.url]! + 1;
+            });
+          }));
         } else {
-          var resp = await MyDio().dio.get<List<int>>(key,
-              options: Options(responseType: ResponseType.bytes));
-          var bytes = resp.data;
-          if (bytes == null) {
-            box.put(key, Uint8List(0));
-          }
-          Map<String, dynamic> params = {};
-          params["src"] = key;
-          params["bytes"] = bytes;
-          params["aid"] = chapter.aid!;
-          params["pid"] = chapter.images[i].pid;
-          compute(convertJmttHelper, params).then(
-            (res) {
-              MyHive().putInHive(lazyBoxName, key, res);
-              setState(() {
-                box.put(key, res["data"]);
-                Global.downloading[chapter.url] =
-                    Global.downloading[chapter.url]! + 1;
-                downloadCompleted(chapter);
-              });
-            },
-          );
+          futures.add(() async {
+            var resp = await MyDio().dio.get<List<int>>(key,
+                options: Options(responseType: ResponseType.bytes));
+            var bytes = resp.data;
+            if (bytes == null) {
+              await box.put(key, Uint8List(0));
+              return;
+            }
+            Map<String, dynamic> params = {};
+            params["src"] = key;
+            params["bytes"] = bytes;
+            params["aid"] = chapter.aid!;
+            params["pid"] = chapter.images[i].pid;
+            var res = await compute(convertJmttHelper, params);
+            MyHive().putInHive(lazyBoxName, key, res);
+            await box.put(key, res["data"]);
+            setState(() {
+              Global.downloading[chapter.url] =
+                  Global.downloading[chapter.url]! + 1;
+            });
+          }());
         }
       }
     }
-    downloadCompleted(chapter);
+    await Future.wait(futures);
+    var finish = await downloadCompleted();
+    if (finish) {
+      setState(() {});
+    }
   }
 
-  bool downloadCompleted(Chapter chapter) {
+  Future<bool> downloadCompleted() async {
+    Chapter chapter = comicInfo.chapters[index];
+    bool res = true;
     if (box.containsKey(chapter.url) ||
         Global.downloading[chapter.url] == chapter.len) {
-      box.put(chapter.url, true);
+      await box.put(chapter.url, res);
       Global.downloading.remove(chapter.url);
-      return true;
+      return res;
     }
-    return false;
+    for (int i = 0; i < chapter.images.length; i++) {
+      if (!box.containsKey(chapter.images[i].src)) {
+        res = false;
+        break;
+      }
+    }
+    if (res) {
+      await box.put(chapter.url, res);
+      Global.downloading.remove(chapter.url);
+    }
+    return res;
+  }
+
+  Future deleteChapter() async {
+    Chapter chapter = comicInfo.chapters[index];
+    await box.delete(chapter.url);
+    await loadImageSrc();
+    chapter = comicInfo.chapters[index];
+    for (int i = 0; i < chapter.images.length; i++) {
+      box.delete(chapter.images[i].src);
+    }
   }
 }

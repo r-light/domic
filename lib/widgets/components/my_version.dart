@@ -19,12 +19,18 @@ Future<bool> checkVersion() async {
       MapEntry(resp.data["name"] ?? "", resp.data["body"] ?? "");
   if (_latestVersionInfo.key.isNotEmpty) {
     var latest = _latestVersionInfo.key;
-    if (latest[0].codeUnitAt(0) < '0'.codeUnitAt(0) ||
-        latest[0].codeUnitAt(0) > '9'.codeUnitAt(0)) {
-      _latestVersionInfo =
-          MapEntry(latest.substring(1), _latestVersionInfo.value);
+    int i = 0, j = latest.length - 1;
+    while (latest[i].codeUnitAt(0) < '0'.codeUnitAt(0) ||
+        latest[i].codeUnitAt(0) > '9'.codeUnitAt(0)) {
+      i++;
     }
-    return _latestVersionInfo.key != _version;
+    while (latest[j].codeUnitAt(0) < '0'.codeUnitAt(0) ||
+        latest[j].codeUnitAt(0) > '9'.codeUnitAt(0)) {
+      j--;
+    }
+    _latestVersionInfo =
+        MapEntry(latest.substring(i), _latestVersionInfo.value);
+    return latest.substring(i, j + 1) != _version;
   }
   return false;
 }
