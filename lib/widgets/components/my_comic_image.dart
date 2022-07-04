@@ -14,6 +14,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide ImageInfo;
 import 'package:image/image.dart' as image_tool;
 
+double getRealHeight(
+    double maxWidth, int? width, int? height, double dafaultHeight) {
+  if (width == null || height == null || width == 0) return dafaultHeight;
+  return maxWidth / width * height;
+}
+
 Map<String, dynamic> convertJmttHelper(Map<String, dynamic> params) {
   // ignore: prefer_function_declarations_over_variables
   var func = (int aid, String pid) {
@@ -97,10 +103,11 @@ Widget normalImageWidget(MapEntry<int, ImageInfo> entry, dynamic setter,
         return waiting(statusWidth, statusHeight);
       }
       if (state.extendedImageLoadState == LoadState.failed) {
-        return Container();
+        return error(statusWidth, statusHeight);
       }
       if (info.height == null && info.width == null) {
-        setter(entry.key, state.extendedImageInfo!.image.width, state.extendedImageInfo!.image.height);
+        setter(entry.key, state.extendedImageInfo!.image.width,
+            state.extendedImageInfo!.image.height);
       }
       info.height = state.extendedImageInfo!.image.height;
       info.width = state.extendedImageInfo!.image.width;
@@ -148,8 +155,9 @@ class _MyJmttComicImageState extends State<MyJmttComicImage>
 
     var lazyBoxName = ConstantString.sourceToLazyBox[widget.source]!;
     var key = widget.imageInfo.src;
+    Map res;
     if (MyHive().isInHive(lazyBoxName, key)) {
-      return await MyHive().getInHive(lazyBoxName, key);
+      res = await MyHive().getInHive(lazyBoxName, key);
     } else {
       var resp = await MyDio().dio.get<List<int>>(key,
           options: Options(responseType: ResponseType.bytes));
@@ -160,12 +168,12 @@ class _MyJmttComicImageState extends State<MyJmttComicImage>
       params["bytes"] = bytes;
       params["aid"] = widget.aid!;
       params["pid"] = widget.imageInfo.pid!;
-      var res = await compute(convertJmttHelper, params);
-      widget.imageInfo.height = res["height"];
-      widget.imageInfo.width = res["width"];
-      MyHive().putInHive(lazyBoxName, key, res["data"]);
-      return res["data"];
+      res = await compute(convertJmttHelper, params);
+      MyHive().putInHive(lazyBoxName, key, res);
     }
+    widget.imageInfo.height = res["height"];
+    widget.imageInfo.width = res["width"];
+    return res["data"];
   }
 
   @override
@@ -175,11 +183,13 @@ class _MyJmttComicImageState extends State<MyJmttComicImage>
     if (widget.source == ConstantString.jmtt) {
       if (widget.aid! < widget.scrambleId!) {
         return normalImageWidget(
-            MapEntry(widget.index, widget.imageInfo), widget.setter,
-            width: widget.width,
-            height: widget.height,
-            statusWidth: widget.statusWidth,
-            statusHeight: widget.statusHeight);
+          MapEntry(widget.index, widget.imageInfo),
+          widget.setter,
+          width: widget.width,
+          height: widget.height,
+          statusWidth: widget.statusWidth,
+          statusHeight: widget.statusHeight,
+        );
       }
       // scramble
       return FutureBuilder<Uint8List>(
@@ -200,11 +210,13 @@ class _MyJmttComicImageState extends State<MyJmttComicImage>
       );
     } else {
       return normalImageWidget(
-          MapEntry(widget.index, widget.imageInfo), widget.setter,
-          width: widget.width,
-          height: widget.height,
-          statusWidth: widget.statusWidth,
-          statusHeight: widget.statusHeight);
+        MapEntry(widget.index, widget.imageInfo),
+        widget.setter,
+        width: widget.width,
+        height: widget.height,
+        statusWidth: widget.statusWidth,
+        statusHeight: widget.statusHeight,
+      );
     }
   }
 

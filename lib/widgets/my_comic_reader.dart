@@ -73,6 +73,9 @@ class _ScrollReaderState extends State<ScrollReader> {
   late bool _isLoading;
   late bool _hasMore;
   late int nextEp;
+  late Axis axis;
+  late bool reversed;
+  late int cachedNum;
   final List<MapEntry<int, ImageInfo>> imageInfos = [];
   final List<MapEntry<int, int>> aidScrambleId = [];
   final List<double> sum = [];
@@ -80,8 +83,10 @@ class _ScrollReaderState extends State<ScrollReader> {
   late final maxWidth = MediaQuery.of(context).size.width;
   late final maxStatusHeightInJmtt = maxHeight / 3;
   late final maxStatusHeight = maxHeight / 5;
-  late Axis axis;
+  double _imageIdx = 0;
+  bool _showFrame = false;
 
+  // this is used to load next episode
   void _onScroll() {
     int idx = 0;
     double offset = _controller.offset;
@@ -104,11 +109,37 @@ class _ScrollReaderState extends State<ScrollReader> {
     }
   }
 
+  void _onScrollImage() {
+    int idx = 0;
+    double offset = _controller.offset;
+    while (idx < imageInfos.length) {
+      if (axis == Axis.vertical) {
+        var placeholder = widget.content["source"] == ConstantString.jmtt
+            ? maxStatusHeightInJmtt
+            : maxStatusHeight;
+        offset -= getRealHeight(maxWidth, imageInfos[idx].value.width,
+            imageInfos[idx].value.height, placeholder);
+      } else {
+        offset -= maxWidth;
+      }
+      if (offset <= 0) {
+        break;
+      }
+      idx++;
+    }
+    if (idx == imageInfos.length) idx--;
+    if (idx != _imageIdx.round()) {
+      setState(() {
+        _imageIdx = idx.toDouble();
+      });
+    }
+    return;
+  }
+
   @override
   void initState() {
-    _controller.addListener(_onScroll);
     super.initState();
-
+    _controller.addListener(_onScroll);
     _isLoading = true;
     _hasMore = true;
     nextEp = widget.content["index"];
@@ -181,15 +212,27 @@ class _ScrollReaderState extends State<ScrollReader> {
             ReaderDirection.topToBottom
         ? Axis.vertical
         : Axis.horizontal;
-    var reversed =
-        context.select((Configs configs) => configs.readerDirection) ==
-                ReaderDirection.rightToLeft
-            ? true
-            : false;
-    var cachedNum = widget.content["source"] == ConstantString.jmtt
+    reversed = context.select((Configs configs) => configs.readerDirection) ==
+            ReaderDirection.rightToLeft
+        ? true
+        : false;
+    cachedNum = widget.content["source"] == ConstantString.jmtt
         ? context.select((Configs configs) => configs.cacheImage18Num)
         : context.select((Configs configs) => configs.cacheImageNum);
 
+    var showBottomSlider =
+        context.select((Configs configs) => configs.showBottomSlider);
+    if (showBottomSlider) {
+      _controller.addListener(_onScrollImage);
+      return Stack(
+        children: [buildReader(), buildFrame()],
+      );
+    } else {
+      return buildReader();
+    }
+  }
+
+  Widget buildReader() {
     return Container(
       color: Colors.black,
       child: ListView.builder(
@@ -238,9 +281,60 @@ class _ScrollReaderState extends State<ScrollReader> {
     );
   }
 
-  double getRealHeight(
-      double maxWidth, int? width, int? height, double dafaultHeight) {
-    if (width == null || height == null || width == 0) return dafaultHeight;
-    return maxWidth / width * height;
+  Widget buildFrame() {
+    return Column(
+      children: [
+        // showFrame ? _buildAppBar() : Container(),
+        Expanded(
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              setState(() {
+                _showFrame = !_showFrame;
+              });
+            },
+            child: Container(),
+          ),
+        ),
+        _showFrame ? _buildSlider() : Container()
+      ],
+    );
+  }
+
+  Widget _buildSlider() {
+    return Material(
+      color: Colors.black.withOpacity(0.7),
+      child: SliderTheme(
+        data: SliderTheme.of(context).copyWith(
+          thumbColor: Colors.white,
+          inactiveTickMarkColor: Colors.transparent,
+          activeTickMarkColor: Colors.transparent,
+        ),
+        child: Slider(
+          min: 0,
+          max: (imageInfos.length - 1).toDouble(),
+          divisions: imageInfos.length,
+          value: _imageIdx,
+          label: (_imageIdx.round() + 1).toString(),
+          onChanged: (value) {
+            _imageIdx = value;
+            double pos = 0;
+            for (int i = 0, length = value.round(); i < length; i++) {
+              if (axis == Axis.vertical) {
+                var placeholder =
+                    widget.content["source"] == ConstantString.jmtt
+                        ? maxStatusHeightInJmtt
+                        : maxStatusHeight;
+                pos += getRealHeight(maxWidth, imageInfos[i].value.width,
+                    imageInfos[i].value.height, placeholder);
+              } else {
+                pos += maxWidth;
+              }
+            }
+            setState(() => _controller.jumpTo(pos));
+          },
+        ),
+      ),
+    );
   }
 }

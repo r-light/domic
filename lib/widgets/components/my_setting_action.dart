@@ -244,6 +244,14 @@ class _MyReadSettingState extends State<MyReadSetting> {
             children: [const Text("网格模式显示漫画信息"), showFooter()],
           ),
         ),
+        // 显示滑动条
+        ListTile(
+          minVerticalPadding: 4,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [const Text("显示滑动条"), showSlider()],
+          ),
+        ),
         // 常规图源缓存
         ListTile(
           title: const Text('常规图源缓存'),
@@ -319,6 +327,34 @@ class _MyReadSettingState extends State<MyReadSetting> {
         if (value != null) {
           Provider.of<Configs>(context, listen: false).showFooterInGridView =
               value;
+        }
+      },
+    );
+  }
+
+  Widget showSlider() {
+    return DropdownButton<bool>(
+      underline: const SizedBox(),
+      // Initial Value
+      value: context.select((Configs config) => config.showBottomSlider),
+      // Down Arrow Icon
+      icon: const Icon(Icons.keyboard_arrow_down),
+      // Array list of items
+      items: const [
+        DropdownMenuItem(
+          value: true,
+          child: Text("是"),
+        ),
+        DropdownMenuItem(
+          value: false,
+          child: Text("否"),
+        )
+      ],
+      // After selecting the desired option,it will
+      // change button value to selected value
+      onChanged: (bool? value) {
+        if (value != null) {
+          Provider.of<Configs>(context, listen: false).showBottomSlider = value;
         }
       },
     );

@@ -268,7 +268,6 @@ class ComicLocal with ChangeNotifier {
 class Configs with ChangeNotifier {
   static const listViewInSearchResultKey = "listViewInSearchResult";
   static const listViewInTagResultKey = "listViewInTagResult";
-
   static const readerDirectionKey = "readerDirection";
   static const showTimeInReaderKey = "showTimeInReader";
   static const autoRefreshKey = "autoRefresh";
@@ -276,6 +275,7 @@ class Configs with ChangeNotifier {
   static const cacheImage18NumKey = "cacheImage18Num";
   static const crossAxisCountInSearchAndTagKey = "crossAxisCountInSearchAndTag";
   static const showFooterInGridViewKey = "showFooterInGridView";
+  static const showBottomSliderKey = "showBottomSliderKey";
 
   late bool _listViewInSearchResult;
   late bool _listViewInTagResult;
@@ -286,6 +286,7 @@ class Configs with ChangeNotifier {
   late int _cacheImage18Num;
   late int _crossAxisCountInSearchAndTag;
   late bool _showFooterInGridView;
+  late bool _showBottomSlider;
   late Box box;
 
   Configs() {
@@ -301,6 +302,7 @@ class Configs with ChangeNotifier {
     _crossAxisCountInSearchAndTag =
         box.get(crossAxisCountInSearchAndTagKey) ?? 2;
     _showFooterInGridView = box.get(showFooterInGridViewKey) ?? true;
+    _showBottomSlider = box.get(showBottomSliderKey) ?? false;
   }
 
   bool get listViewInSearchResult => _listViewInSearchResult;
@@ -373,6 +375,14 @@ class Configs with ChangeNotifier {
     _showFooterInGridView = value;
     notifyListeners();
     box.put(showFooterInGridViewKey, value);
+  }
+
+  bool get showBottomSlider => _showBottomSlider;
+
+  set showBottomSlider(bool value) {
+    _showBottomSlider = value;
+    notifyListeners();
+    box.put(showBottomSliderKey, value);
   }
 }
 
