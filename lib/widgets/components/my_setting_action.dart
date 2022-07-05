@@ -241,6 +241,14 @@ class _MyReadSettingState extends State<MyReadSetting> {
     return ListView(
       padding: const EdgeInsets.all(5.0),
       children: <Widget>[
+        // 修改阅读方式
+        ListTile(
+          minVerticalPadding: 4,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [const Text("修改阅读方式"), readerTypeWidget()],
+          ),
+        ),
         // 修改阅读方向
         ListTile(
           minVerticalPadding: 4,
@@ -368,6 +376,30 @@ class _MyReadSettingState extends State<MyReadSetting> {
       onChanged: (bool? value) {
         if (value != null) {
           Provider.of<Configs>(context, listen: false).showBottomSlider = value;
+        }
+      },
+    );
+  }
+
+  Widget readerTypeWidget() {
+    return DropdownButton<ReaderType>(
+      underline: const SizedBox(),
+      // Initial Value
+      value: context.select((Configs config) => config.readerType),
+      // Down Arrow Icon
+      icon: const Icon(Icons.keyboard_arrow_down),
+      // Array list of items
+      items: ReaderType.values.map((ReaderType item) {
+        return DropdownMenuItem(
+          value: item,
+          child: Text(ConstantString.readerTypeName[item.index]),
+        );
+      }).toList(),
+      // After selecting the desired option,it will
+      // change button value to selected value
+      onChanged: (ReaderType? value) {
+        if (value != null) {
+          Provider.of<Configs>(context, listen: false).readerType = value;
         }
       },
     );

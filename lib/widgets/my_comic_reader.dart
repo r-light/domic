@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:domic/comic/api.dart';
 import 'package:domic/comic/extractors/dto.dart';
 import 'package:domic/common/global.dart';
@@ -25,10 +27,11 @@ class MyComicReader extends StatefulWidget {
 }
 
 class _MyComicReaderState extends State<MyComicReader> {
-  late ReaderType _readerType = ReaderType.scroll;
+  late ReaderType _readerType;
 
   @override
   Widget build(BuildContext context) {
+    _readerType = context.select((Configs configs) => configs.readerType);
     return buildReader();
   }
 
@@ -39,7 +42,7 @@ class _MyComicReaderState extends State<MyComicReader> {
           content: widget.content,
         );
       case ReaderType.album:
-        return ScrollReader(
+        return AlbumReader(
           content: widget.content,
         );
     }
@@ -81,8 +84,9 @@ class _ScrollReaderState extends State<ScrollReader> {
   late final maxStatusHeight = maxHeight / 5;
   double _imageIdx = 0;
   bool _showFrame = false;
+  late var downloadBox = Hive.lazyBox(ConstantString.comic18DownloadBox);
 
-  // this is used to load next episode
+  // this is used to persist episode index
   void _onScroll() {
     int idx = 0;
     double offset = _controller.offset;
@@ -168,14 +172,20 @@ class _ScrollReaderState extends State<ScrollReader> {
     _isLoading = true;
     ComicInfo comicInfo = widget.content["comicInfo"];
     String source = widget.content["source"];
-    var lazyBoxName = ConstantString.sourceToLazyBox[source]!;
-    var key = Global.comicChapterKey(source, comicInfo.id, nextEp);
-    if (MyHive().isInHive(lazyBoxName, key)) {
-      comicInfo.chapters[nextEp] = await MyHive().getInHive(lazyBoxName, key);
+    if (comic18Method.containsKey(source) &&
+        downloadBox.containsKey(comicInfo.chapters[nextEp].url)) {
+      comicInfo.chapters[nextEp] =
+          await downloadBox.get(comicInfo.chapters[nextEp].url);
     } else {
-      var parser = comicMethod[source] ?? comic18Method[source]!;
-      await parser.comicByChapter(comicInfo, idx: nextEp);
-      MyHive().putInHive(lazyBoxName, key, comicInfo.chapters[nextEp]);
+      var lazyBoxName = ConstantString.sourceToLazyBox[source]!;
+      var key = Global.comicChapterKey(source, comicInfo.id, nextEp);
+      if (MyHive().isInHive(lazyBoxName, key)) {
+        comicInfo.chapters[nextEp] = await MyHive().getInHive(lazyBoxName, key);
+      } else {
+        var parser = comicMethod[source] ?? comic18Method[source]!;
+        await parser.comicByChapter(comicInfo, idx: nextEp);
+        MyHive().putInHive(lazyBoxName, key, comicInfo.chapters[nextEp]);
+      }
     }
     Future.delayed(Duration.zero, () {
       setState(() {
@@ -267,9 +277,7 @@ class _ScrollReaderState extends State<ScrollReader> {
                 statusHeight: axis == Axis.horizontal
                     ? maxHeight
                     : getRealHeight(maxWidth, imageInfos[index].value.width,
-                        imageInfos[index].value.height, maxStatusHeight)
-                // maxHeight / 5,
-                );
+                        imageInfos[index].value.height, maxStatusHeight));
           }
         },
         itemCount: _hasMore ? imageInfos.length + 1 : imageInfos.length,
@@ -333,4 +341,223 @@ class _ScrollReaderState extends State<ScrollReader> {
       ),
     );
   }
+}
+
+class AlbumReader extends StatefulWidget {
+  /*  "chapters": seqList,
+      "index": _reversed ? _length! - 1 - _index! : _index!,
+      "source": record.source,
+      "comicInfo": snapshot.requireData,
+   */
+  const AlbumReader({
+    Key? key,
+    required this.content,
+  }) : super(key: key);
+
+  final dynamic content;
+
+  @override
+  State<AlbumReader> createState() => _AlbumReaderState();
+}
+
+class _AlbumReaderState extends State<AlbumReader> {
+  final PageController _controller = PageController(keepPage: false);
+  late bool _isLoading;
+  late bool _hasMore;
+  late int nextEp;
+  late Axis axis;
+  late bool reversed;
+  late int cachedNum;
+  final List<int> numPerEp = [];
+  final List<MapEntry<int, ImageInfo>> imageInfos = [];
+  final List<MapEntry<int, int>> aidScrambleId = [];
+  late final maxHeight = MediaQuery.of(context).size.height;
+  late final maxWidth = MediaQuery.of(context).size.width;
+  bool _showFrame = false;
+  double _imageIdx = 0;
+  late var downloadBox = Hive.lazyBox(ConstantString.comic18DownloadBox);
+
+  void loadNextEpisode() async {
+    _isLoading = true;
+    ComicInfo comicInfo = widget.content["comicInfo"];
+    String source = widget.content["source"];
+    if (comic18Method.containsKey(source) &&
+        downloadBox.containsKey(comicInfo.chapters[nextEp].url)) {
+      comicInfo.chapters[nextEp] =
+          await downloadBox.get(comicInfo.chapters[nextEp].url);
+    } else {
+      var lazyBoxName = ConstantString.sourceToLazyBox[source]!;
+      var key = Global.comicChapterKey(source, comicInfo.id, nextEp);
+      if (MyHive().isInHive(lazyBoxName, key)) {
+        comicInfo.chapters[nextEp] = await MyHive().getInHive(lazyBoxName, key);
+      } else {
+        var parser = comicMethod[source] ?? comic18Method[source]!;
+        await parser.comicByChapter(comicInfo, idx: nextEp);
+        MyHive().putInHive(lazyBoxName, key, comicInfo.chapters[nextEp]);
+      }
+    }
+    Future.delayed(Duration.zero, () {
+      setState(() {
+        for (var imageInfo in comicInfo.chapters[nextEp].images) {
+          imageInfos.add(
+              MapEntry(nextEp - (widget.content["index"] as int), imageInfo));
+          aidScrambleId.add(MapEntry(comicInfo.chapters[nextEp].aid ?? 0,
+              comicInfo.chapters[nextEp].scrambleId ?? 0));
+        }
+        numPerEp.add(comicInfo.chapters[nextEp].images.length);
+        _isLoading = false;
+        nextEp++;
+        if (nextEp >= comicInfo.chapters.length) {
+          _hasMore = false;
+        }
+      });
+    });
+  }
+
+  void _onScroll() {
+    int idx = 0;
+    int page = (_controller.page?.round() ?? -1) + 1;
+    if (_imageIdx.round() != page) {
+      setState(() {
+        _imageIdx = page.toDouble();
+      });
+    }
+    while (idx < numPerEp.length) {
+      page -= numPerEp[idx];
+      if (page <= 0) {
+        break;
+      }
+      idx++;
+    }
+    if (idx >= numPerEp.length) idx--;
+    if (widget.content["reversed"]) {
+      Hive.box(ConstantString.comicBox).put(
+          Global.indexKey(widget.content["comicSimple"]),
+          widget.content["index"] + idx);
+    } else {
+      Hive.box(ConstantString.comicBox).put(
+          Global.indexKey(widget.content["comicSimple"]),
+          widget.content["reversedIndex"] - idx);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_onScroll);
+    _isLoading = true;
+    _hasMore = true;
+    nextEp = widget.content["index"];
+    loadNextEpisode();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    axis = context.select((Configs configs) => configs.readerDirection) ==
+            ReaderDirection.topToBottom
+        ? Axis.vertical
+        : Axis.horizontal;
+    reversed = context.select((Configs configs) => configs.readerDirection) ==
+            ReaderDirection.rightToLeft
+        ? true
+        : false;
+    cachedNum = widget.content["source"] == ConstantString.jmtt
+        ? context.select((Configs configs) => configs.cacheImage18Num)
+        : context.select((Configs configs) => configs.cacheImageNum);
+
+    var showBottomSlider =
+        context.select((Configs configs) => configs.showBottomSlider);
+
+    if (showBottomSlider) {
+      return Stack(
+        children: [buildReader(), buildFrame()],
+      );
+    } else {
+      return buildReader();
+    }
+  }
+
+  Widget buildReader() {
+    return Container(
+        color: Colors.black,
+        child: PageView.builder(
+          allowImplicitScrolling: true,
+          scrollDirection: axis,
+          controller: _controller,
+          reverse: reversed,
+          itemBuilder: (context, index) {
+            if (index >= imageInfos.length) {
+              if (!_isLoading && _hasMore) {
+                loadNextEpisode();
+              }
+              return _hasMore ? waiting(maxWidth, maxHeight) : Container();
+            }
+            if (widget.content["source"] == ConstantString.jmtt) {
+              return MyJmttComicImage(
+                imageInfo: imageInfos[index].value,
+                index: imageInfos[index].key,
+                setter: setter,
+                source: widget.content["source"],
+                aid: aidScrambleId[index].key,
+                scrambleId: aidScrambleId[index].value,
+                width: maxWidth,
+                statusWidth: maxWidth,
+                statusHeight: maxHeight,
+              );
+            } else {
+              return normalImageWidget(imageInfos[index], setter,
+                  width: maxWidth,
+                  statusWidth: maxWidth,
+                  statusHeight: maxHeight);
+            }
+          },
+          itemCount: _hasMore ? imageInfos.length + 1 : imageInfos.length,
+        ));
+  }
+
+  Widget buildFrame() {
+    return Column(
+      children: [
+        // showFrame ? _buildAppBar() : Container(),
+        Expanded(
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              setState(() {
+                _showFrame = !_showFrame;
+              });
+            },
+            child: Container(),
+          ),
+        ),
+        _showFrame ? _buildSlider() : Container()
+      ],
+    );
+  }
+
+  Widget _buildSlider() {
+    return Material(
+      color: Colors.black.withOpacity(0.7),
+      child: SliderTheme(
+        data: SliderTheme.of(context).copyWith(
+          thumbColor: Colors.white,
+          inactiveTickMarkColor: Colors.transparent,
+          activeTickMarkColor: Colors.transparent,
+        ),
+        child: Slider(
+          min: 0,
+          max: (imageInfos.length - 1).toDouble(),
+          divisions: imageInfos.length,
+          value: min(_imageIdx, (imageInfos.length - 1).toDouble()),
+          label: (_imageIdx.round() + 1).toString(),
+          onChanged: (value) {
+            _imageIdx = value;
+            setState(() => _controller.jumpToPage(_imageIdx.round()));
+          },
+        ),
+      ),
+    );
+  }
+
+  void setter(int idx, int width, int height) {}
 }

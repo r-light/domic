@@ -281,10 +281,10 @@ class Configs with ChangeNotifier {
   static const crossAxisCountInSearchAndTagKey = "crossAxisCountInSearchAndTag";
   static const showFooterInGridViewKey = "showFooterInGridView";
   static const showBottomSliderKey = "showBottomSliderKey";
+  static const readerTypeKey = "readerType";
 
   late bool _listViewInSearchResult;
   late bool _listViewInTagResult;
-  late ReaderDirection _readerDirection;
   late bool _showTimeInReader;
   late bool _autoRefresh;
   late int _cacheImageNum;
@@ -292,14 +292,14 @@ class Configs with ChangeNotifier {
   late int _crossAxisCountInSearchAndTag;
   late bool _showFooterInGridView;
   late bool _showBottomSlider;
+  late ReaderDirection _readerDirection;
+  late ReaderType _readerType;
   late Box box;
 
   Configs() {
     box = Hive.box(ConstantString.propertyBox);
     _listViewInSearchResult = box.get(listViewInSearchResultKey) ?? true;
     _listViewInTagResult = box.get(listViewInTagResultKey) ?? true;
-    _readerDirection =
-        box.get(readerDirectionKey) ?? ReaderDirection.topToBottom;
     _showTimeInReader = box.get(showTimeInReaderKey) ?? true;
     _autoRefresh = box.get(autoRefreshKey) ?? true;
     _cacheImageNum = box.get(cacheImageNumKey) ?? 5;
@@ -308,6 +308,9 @@ class Configs with ChangeNotifier {
         box.get(crossAxisCountInSearchAndTagKey) ?? 2;
     _showFooterInGridView = box.get(showFooterInGridViewKey) ?? true;
     _showBottomSlider = box.get(showBottomSliderKey) ?? false;
+    readerDirection =
+        box.get(readerDirectionKey) ?? ReaderDirection.topToBottom;
+    _readerType = box.get(readerTypeKey) ?? ReaderType.scroll;
   }
 
   bool get listViewInSearchResult => _listViewInSearchResult;
@@ -333,6 +336,15 @@ class Configs with ChangeNotifier {
     notifyListeners();
     box.put(readerDirectionKey, value);
   }
+
+  ReaderType get readerType => _readerType;
+
+  set readerType(ReaderType value) {
+    _readerType = value;
+    notifyListeners();
+    box.put(readerTypeKey, value);
+  }
+
 
   bool get showTimeInReader => _showTimeInReader;
 

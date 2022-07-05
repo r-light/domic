@@ -48,6 +48,7 @@ class ConstantString {
   };
 
   static const readerDirectionName = ["从上到下", "从左到右", "从右到左"];
+  static const readerTypeName = ["卷轴模式", "相册模式"];
 
   static const defaultCoverUrl =
       "http://i.ywzqzx.com/mh/cover/2019/11/19/1159a8ff17.jpg/420";

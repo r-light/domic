@@ -272,18 +272,18 @@ class MyDownloadTileState extends State<MyDownloadTile> {
     bool res = true;
     if (box.containsKey(chapter.url) ||
         Global.downloading[chapter.url] == chapter.len) {
-      await box.put(chapter.url, res);
+      await box.put(chapter.url, comicInfo.chapters[index]);
       Global.downloading.remove(chapter.url);
       return res;
     }
-    for (int i = 0; i < chapter.images.length; i++) {
-      if (!box.containsKey(chapter.images[i].src)) {
+    for (var image in chapter.images) {
+      if (!box.containsKey(image.src)) {
         res = false;
         break;
       }
     }
     if (res) {
-      await box.put(chapter.url, res);
+      await box.put(chapter.url, comicInfo.chapters[index]);
       Global.downloading.remove(chapter.url);
     }
     return res;
