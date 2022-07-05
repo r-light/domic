@@ -26,9 +26,8 @@
 
 ## 界面
 
-<img src="https://jzh-markdown-pics.oss-cn-beijing.aliyuncs.com/uPic/20220704203847%20Simulator%20Screen%20Shot%20-%20iPhone%2011%20-%202022-07-04%20at%2020.37.35.png" alt="Simulator Screen Shot - iPhone 11 - 2022-07-04 at 20.37.35" style="zoom: 33%;" /><img src="/Users/jiao/Desktop/Simulator Screen Shot - iPhone 11 - 2022-07-04 at 20.40.14.png" alt="Simulator Screen Shot - iPhone 11 - 2022-07-04 at 20.40.14" style="zoom: 33%;" />
-
-<img src="https://jzh-markdown-pics.oss-cn-beijing.aliyuncs.com/uPic/20220704204141%20Simulator%20Screen%20Shot%20-%20iPhone%2011%20-%202022-07-04%20at%2020.41.28.png" alt="Simulator Screen Shot - iPhone 11 - 2022-07-04 at 20.41.28" style="zoom: 33%;" /><img src="https://jzh-markdown-pics.oss-cn-beijing.aliyuncs.com/uPic/20220704205025%20Simulator%20Screen%20Shot%20-%20iPhone%2011%20-%202022-07-04%20at%2020.50.17.png" alt="Simulator Screen Shot - iPhone 11 - 2022-07-04 at 20.50.17" style="zoom:33%;" />
+<img src="https://jzh-markdown-pics.oss-cn-beijing.aliyuncs.com/uPic/20220704203847%20Simulator%20Screen%20Shot%20-%20iPhone%2011%20-%202022-07-04%20at%2020.37.35.png" alt="Simulator Screen Shot - iPhone 11 - 2022-07-04 at 20.37.35" style="zoom: 33%;" />
+<img src="https://jzh-markdown-pics.oss-cn-beijing.aliyuncs.com/uPic/20220704204141%20Simulator%20Screen%20Shot%20-%20iPhone%2011%20-%202022-07-04%20at%2020.41.28.png" alt="Simulator Screen Shot - iPhone 11 - 2022-07-04 at 20.41.28" style="zoom: 33%;" />
 
 ## 致谢
 
