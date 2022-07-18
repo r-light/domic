@@ -56,7 +56,7 @@ class _MyComicHomeState extends State<MyComicHome> {
     super.initState();
     var lazyBoxName = ConstantString.sourceToLazyBox[widget.content["source"]]!;
     var key = widget.content["source"] + "homeTabs";
-    if (MyHive().isInHive(lazyBoxName, key, dur: const Duration(hours: 1))) {
+    if (MyHive().isInHive(lazyBoxName, key, dur: Duration.zero)) {
       tabsUrlFuture = MyHive().getInHive(lazyBoxName, key);
     } else {
       var parser = (comicMethod[widget.content["source"]] ??
@@ -144,7 +144,7 @@ class _MyComicHomeLayoutState extends State<MyComicHomeLayout> {
     Future future;
     var lazyBoxName = ConstantString.sourceToLazyBox[widget.source]!;
     var key = "${widget.source}${path}_$currentPage";
-    if (MyHive().isInHive(lazyBoxName, key, dur: const Duration(minutes: 10))) {
+    if (MyHive().isInHive(lazyBoxName, key, dur: Duration.zero)) {
       future = MyHive().getInHive(lazyBoxName, key);
     } else {
       var parser = (comicMethod[widget.source] ?? comic18Method[widget.source]!)

@@ -7,8 +7,8 @@ import 'package:html/parser.dart';
 
 class Gufeng extends Parser {
   static Gufeng? _instance;
-  String domainBase = "https://www.gufengmh9.com/";
-  String searchBase = "https://www.gufengmh9.com/search/";
+  String domainBase = "https://www.123gf.com/";
+  String searchBase = "https://www.123gf.com/search/";
 
   Gufeng._internal() {
     _instance = this;
@@ -170,7 +170,7 @@ class Gufeng extends Parser {
 
   Future<List<MapEntry<String, String>>> getComicTabs() async {
     var resp = await MyDio().getHtml(
-      RequestOptions(baseUrl: domainBase, path: "/rank/-click/", method: "GET"),
+      RequestOptions(baseUrl: domainBase, path: "/rank/", method: "GET"),
     );
     var content = resp.value?.data.toString();
     var doc = parse(content);
@@ -188,7 +188,7 @@ class Gufeng extends Parser {
     var resp = await MyDio().getHtml(
       RequestOptions(path: path, baseUrl: domainBase, method: "GET"),
     );
-    var content = resp.value?.data.toString();
+    var content = resp.value?.data.toString() ?? "";
     var doc = parse(content);
     List<ComicSimple> list = [];
     doc
