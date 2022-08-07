@@ -34,6 +34,7 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
           : Colors.grey.shade800;
   late Future<ComicInfo> _comicInfo =
       loadComicInfo(dur: const Duration(hours: 1));
+  Future? _comicRelated;
   ComicInfo? _comicInfoRes;
   late bool _reversed = Hive.box(ConstantString.comicBox)
           .get(Global.reversedKey(widget.content["record"])) ??
@@ -455,12 +456,12 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
   }
 
   Widget relatedWidget(String id) {
-    return FutureBuilder<List<ComicSimple>>(
-        future: Jmtt().comicByRelated(id),
-        initialData: const [],
+    _comicRelated ??= getRelated(id);
+    return FutureBuilder(
+        future: _comicRelated,
         builder: (
           BuildContext context,
-          AsyncSnapshot<List<ComicSimple>> snapshot,
+          AsyncSnapshot snapshot,
         ) {
           var data = snapshot.data;
           return SliverPadding(
@@ -468,8 +469,6 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
             sliver: SliverGrid(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
-                // crossAxisCount: context.select(
-                // (Configs configs) => configs.crossAxisCountInSearchAndTag),
                 crossAxisSpacing: 5.0,
                 mainAxisSpacing: 5.0,
                 childAspectRatio: 4 / 5,
@@ -553,5 +552,19 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
     setState(() {
       _comicInfo = loadComicInfo(dur: Duration.zero);
     });
+  }
+
+  Future getRelated(String id,
+      {Duration dur = const Duration(hours: 12)}) async {
+    String source = ConstantString.jmtt;
+    var lazyBoxName = ConstantString.sourceToLazyBox[source]!;
+    var key = "${id}_related";
+    if (MyHive().isInHive(lazyBoxName, key, dur: dur)) {
+      return MyHive().getInHive(lazyBoxName, key);
+    } else {
+      var res = await Jmtt().comicByRelated(id);
+      MyHive().putInHive(lazyBoxName, key, res);
+      return res;
+    }
   }
 }

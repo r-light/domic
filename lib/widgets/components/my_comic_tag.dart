@@ -31,7 +31,7 @@ class _MyComicTagState extends State<MyComicTag> {
   int type = 0;
 
   String comicTagKey(String source, String tag, int currentPage, int type) {
-    return "$source${tag}_&tpye_$currentPage";
+    return "$source${tag}_${type}_$currentPage";
   }
 
   // load more comicSimple
