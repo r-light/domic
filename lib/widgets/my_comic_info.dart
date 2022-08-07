@@ -3,9 +3,12 @@ import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:domic/comic/api.dart';
 import 'package:domic/comic/extractors/dto.dart';
+import 'package:domic/comic/extractors/jmtt.dart';
 import 'package:domic/common/common.dart';
 import 'package:domic/common/global.dart';
 import 'package:domic/common/hive.dart';
+import 'package:domic/widgets/components/my_comic_card.dart';
+import 'package:domic/widgets/components/my_grid_gesture_detector.dart';
 import 'package:domic/widgets/components/my_setting_action.dart';
 import 'package:domic/widgets/components/my_status.dart';
 import 'package:flutter/material.dart';
@@ -399,29 +402,94 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
             ),
           )));
     }
-    return CustomScrollView(slivers: [
-      SliverList(
-        delegate: SliverChildListDelegate(
-          [
-            comicMethod.containsKey(widget.content["record"].source)
-                ? Container()
-                : comicTags(context, snapshot),
-          ],
-        ),
-      ),
-      SliverPadding(
-        padding: const EdgeInsets.all(5),
-        sliver: SliverGrid(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            childAspectRatio: 3.5,
-            crossAxisSpacing: 15.0,
-            mainAxisSpacing: 10.0,
+    if (record.source == ConstantString.jmtt) {
+      return CustomScrollView(slivers: [
+        SliverList(
+          delegate: SliverChildListDelegate(
+            [
+              comicMethod.containsKey(widget.content["record"].source)
+                  ? Container()
+                  : comicTags(context, snapshot),
+            ],
           ),
-          delegate: SliverChildListDelegate(chapters),
         ),
-      )
-    ]);
+        SliverPadding(
+          padding: const EdgeInsets.all(5),
+          sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              childAspectRatio: 3.5,
+              crossAxisSpacing: 15.0,
+              mainAxisSpacing: 10.0,
+            ),
+            delegate: SliverChildListDelegate(chapters),
+          ),
+        ),
+        relatedWidget(record.id),
+      ]);
+    } else {
+      return CustomScrollView(slivers: [
+        SliverList(
+          delegate: SliverChildListDelegate(
+            [
+              comicMethod.containsKey(widget.content["record"].source)
+                  ? Container()
+                  : comicTags(context, snapshot),
+            ],
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.all(5),
+          sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              childAspectRatio: 3.5,
+              crossAxisSpacing: 15.0,
+              mainAxisSpacing: 10.0,
+            ),
+            delegate: SliverChildListDelegate(chapters),
+          ),
+        ),
+      ]);
+    }
+  }
+
+  Widget relatedWidget(String id) {
+    return FutureBuilder<List<ComicSimple>>(
+        future: Jmtt().comicByRelated(id),
+        initialData: const [],
+        builder: (
+          BuildContext context,
+          AsyncSnapshot<List<ComicSimple>> snapshot,
+        ) {
+          var data = snapshot.data;
+          return SliverPadding(
+            padding: const EdgeInsets.only(top: 20),
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                // crossAxisCount: context.select(
+                // (Configs configs) => configs.crossAxisCountInSearchAndTag),
+                crossAxisSpacing: 5.0,
+                mainAxisSpacing: 5.0,
+                childAspectRatio: 4 / 5,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (BuildContext context, int index) {
+                  return MyGridGestureDetector(
+                    record: data![index],
+                    // setterLatest: onTap,
+                    child: ComicSimpleItem(
+                      comicSimple: data[index],
+                      isList: false,
+                    ),
+                  );
+                },
+                childCount: data?.length ?? 0,
+              ),
+            ),
+          );
+        });
   }
 
   Widget comicTags(BuildContext context, AsyncSnapshot<ComicInfo> snapshot) {

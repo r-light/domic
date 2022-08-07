@@ -1,5 +1,3 @@
-import 'package:dio/dio.dart';
-import 'package:domic/comic/extractors/dio.dart';
 import 'package:domic/comic/extractors/dto.dart';
 import 'package:domic/common/common.dart';
 import 'package:domic/common/global.dart';
@@ -19,7 +17,6 @@ import 'package:domic/widgets/my_search_result.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:hive/hive.dart';
-import 'package:html/parser.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -36,10 +33,7 @@ void main() async {
   Hive.registerAdapter(ReaderTypeAdapter());
   await MyHive().init();
 
-  var e = await MyDio().getHtml(RequestOptions(path: "http://www.pfmh.net/"));
-  var doc = parse(e.value?.data.toString() ?? "");
-  Global.defaultCover = doc.querySelector("img")?.attributes["src"] ??
-      ConstantString.defaultCoverUrl;
+  Global.defaultCover = ConstantString.defaultCoverUrl;
   await initVersion();
 
   runApp(MultiProvider(

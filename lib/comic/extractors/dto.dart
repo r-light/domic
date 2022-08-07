@@ -10,6 +10,7 @@ const sourcesName = {
   "gufeng": "古风漫画",
   "bainian": "百年漫画",
   "qimiao": "奇妙漫画",
+  "qiman": "奇漫屋",
 };
 
 @HiveType(typeId: 1)

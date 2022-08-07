@@ -273,39 +273,6 @@ class Jmtt extends Parser {
     return ComicPageData(maxPage, list, maxNum: total);
   }
 
-  String listHelper(var a, var c) {
-    return (c < a ? "" : listHelper(a, c ~/ a)) +
-        ((c = c % a) > 35 ? String.fromCharCode(c + 29) : c.toRadixString(36));
-  }
-
-  List<String> getImgUrl(String p, int a, int c, List<String> k, Map d) {
-    while (c-- > 0) {
-      d[listHelper(a, c)] = k[c].isEmpty ? listHelper(a, c) : k[c];
-    }
-    c = 1;
-    List<String> urls = p.split(";");
-    if (urls.last.isEmpty) urls.removeLast();
-    urls = urls.map((element) {
-      var tmp = element.split("=").last;
-      return tmp.substring(1, tmp.length - 1);
-    }).toList();
-    urls = urls.map((element) {
-      String res = "";
-      element.split("/").forEach((element) {
-        if (element.contains(".")) {
-          var tmp = element.split(".");
-          res += (d[tmp[0]] ?? element) + ".";
-          res += (d[tmp[1]] ?? element) + "/";
-        } else {
-          res += (d[element] ?? element) + "/";
-        }
-      });
-      res = res.substring(0, res.length - 1);
-      return res;
-    }).toList();
-    return urls;
-  }
-
   Future<ComicPageData> comicByTag(String path, int page,
       {int type = 0}) async {
     path += "&page=$page";
@@ -355,5 +322,54 @@ class Jmtt extends Parser {
       ),
     );
     return parseComicPageHelper(resp, page);
+  }
+
+  Future<List<ComicSimple>> comicByRelated(String id) async {
+    List<ComicSimple> list = [];
+    var resp = await MyDio().getHtml(
+      RequestOptions(
+        path: id,
+        baseUrl: domainBase,
+        method: "GET",
+      ),
+    );
+    var content = resp.value?.data.toString();
+    var doc = parse(content);
+    doc
+        .querySelector(".row.m-l-0.m-r-0.m-b-10>.owl-carousel")
+        ?.querySelectorAll(".p-b-15.p-l-5.p-r-5")
+        .forEach((e) {
+      var id = e.querySelector("a")?.attributes["href"] ?? "";
+      var title = e.querySelector("span.video-title")?.text ?? "";
+      title = trimAllLF(title);
+      var thumb = e.querySelector("img")?.attributes["data-src"] ??
+          e.querySelector("img")?.attributes["src"] ??
+          "";
+      var updateDate = "";
+      var star = e.querySelector(".label-loveicon")?.text.trim() ?? "";
+      List<String> tags = [];
+      e
+          .querySelectorAll(".title-truncate")
+          .last
+          .querySelectorAll("a")
+          .forEach((element) {
+        tags.add(element.text.trim());
+      });
+      List<String> categories = [];
+      e.querySelector(".category-icon")?.children.forEach((element) {
+        categories.add(element.text);
+      });
+      var source = "jmtt";
+      var sourceName = sourcesName["jmtt"] ?? "";
+      var author = e.querySelector("div.title-truncate")?.text ?? "";
+      author = trimAllLF(author);
+      var c =
+          ComicSimple(id, title, thumb, author, updateDate, source, sourceName);
+      c.tags = tags;
+      c.categories = categories;
+      c.star = star;
+      list.add(c);
+    });
+    return list;
   }
 }

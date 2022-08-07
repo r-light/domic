@@ -189,7 +189,7 @@ class Pufei extends Parser {
 
   List<String> getImgUrl(String p, int a, int c, List<String> k, Map d) {
     while (c-- > 0) {
-      d[listHelper(a, c)] = k[c].isEmpty ? listHelper(a, c) : k[c];
+      d[listHelper(a, c)] = k[c].isNotEmpty ? k[c] : listHelper(a, c);
     }
     c = 1;
     List<String> urls = p.split(";");

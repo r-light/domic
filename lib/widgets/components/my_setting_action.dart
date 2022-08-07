@@ -306,7 +306,7 @@ class _MyReadSettingState extends State<MyReadSetting> {
         ),
         // 设置crossAxisCountInSearchAndTag
         ListTile(
-          title: const Text('每行展示漫画数目(网格模式)'),
+          title: const Text('搜索每行展示漫画数目(网格模式)'),
           subtitle: Text(
               "当前数目: ${context.select((Configs configs) => configs.crossAxisCountInSearchAndTag)}"),
           onTap: () async {

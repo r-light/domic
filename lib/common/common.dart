@@ -16,12 +16,15 @@ class ConstantString {
   static const gufeng = "gufeng";
   static const bainian = "bainian";
   static const qimiao = "qimiao";
+  static const qiman = "qiman";
 
   static const pufeiCacheBox = "pufeiCacheLazy";
   static const jmttCacheBox = "jmttCacheLazy";
   static const gufengCacheBox = "gufengCacheLazy";
   static const bainianCacheBox = "bainianCacheLazy";
   static const qimiaoCacheBox = "qimiaoCacheLazy";
+  static const qimanCacheBox = "qimanCacheLazy";
+
   static const comic18DownloadBox = "comic18DownloadLazy";
 
   static const comicBox = "comic";
@@ -37,6 +40,7 @@ class ConstantString {
     gufengCacheBox,
     bainianCacheBox,
     qimiaoCacheBox,
+    qimanCacheBox,
   ];
 
   static const sourceToLazyBox = {
@@ -44,14 +48,15 @@ class ConstantString {
     jmtt: jmttCacheBox,
     gufeng: gufengCacheBox,
     bainian: bainianCacheBox,
-    qimiao: qimiaoCacheBox
+    qimiao: qimiaoCacheBox,
+    qiman: qimanCacheBox,
   };
 
   static const readerDirectionName = ["从上到下", "从左到右", "从右到左"];
   static const readerTypeName = ["卷轴模式", "相册模式"];
 
   static const defaultCoverUrl =
-      "http://i.ywzqzx.com/mh/cover/2019/11/19/1159a8ff17.jpg/420";
+      "https://manhua.acimg.cn/vertical/0/18_17_39_ea5671977fc690a42459210737b4c67a_1592473175770.jpg/420";
   static const versionUrl =
       "https://api.github.com/repos/r-light/domic/releases/latest";
   static const releaseUrl = "https://github.com/r-light/domic/releases/";
@@ -70,9 +75,10 @@ class Routes {
   static const String myComicTagRoute = "MyComicTag";
   static const String myDownloadRoute = "MyDownload";
   static const routes = {
-    ConstantString.pufei: myComicTagRoute,
-    ConstantString.gufeng: myComicTagRoute,
-    ConstantString.bainian: myComicTagRoute,
+    // ConstantString.pufei: myComicTagRoute,
+    // ConstantString.gufeng: myComicTagRoute,
+    // ConstantString.bainian: myComicTagRoute,
+    ConstantString.qiman: myComicTagRoute,
     ConstantString.jmtt: myComicTagRoute,
   };
 }
