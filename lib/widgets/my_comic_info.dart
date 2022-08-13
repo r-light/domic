@@ -24,6 +24,7 @@ class MyComicInfoPage extends StatefulWidget {
 }
 
 class _MyComicInfoPageState extends State<MyComicInfoPage> {
+  static const tabs = [ConstantString.chapters, ConstantString.recommendations];
   late Decoration? dec =
       MediaQuery.of(context).platformBrightness == Brightness.dark
           ? null
@@ -154,12 +155,14 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
         ) {
           return Column(children: [
             comicSimpleCard(context, snapshot),
-            Expanded(child: comicChapterGrid(context, snapshot)),
+            !comic18Method.containsKey(record.source)
+                ? Expanded(child: comicChapterGrid(context, snapshot))
+                : Expanded(child: comic18ChapterGrid(context, snapshot)),
           ]);
         },
       ),
-      floatingActionButton: floatingButtonWidget(context),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+      // floatingActionButton: floatingButtonWidget(context),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
     );
   }
 
@@ -333,7 +336,7 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
                       ]),
                   const Padding(padding: EdgeInsets.symmetric(vertical: 2.0)),
                   LimitedBox(
-                    maxHeight: 100,
+                    maxHeight: 90,
                     child: SingleChildScrollView(
                       child: Text(
                         snapshot.data?.description ?? "",
@@ -403,19 +406,11 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
             ),
           )));
     }
-    if (record.source == ConstantString.jmtt) {
-      return CustomScrollView(slivers: [
-        SliverList(
-          delegate: SliverChildListDelegate(
-            [
-              comicMethod.containsKey(widget.content["record"].source)
-                  ? Container()
-                  : comicTags(context, snapshot),
-            ],
-          ),
-        ),
+
+    return Scaffold(
+      body: CustomScrollView(slivers: [
         SliverPadding(
-          padding: const EdgeInsets.all(5),
+          padding: const EdgeInsets.all(10),
           sliver: SliverGrid(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
@@ -426,33 +421,109 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
             delegate: SliverChildListDelegate(chapters),
           ),
         ),
-        relatedWidget(record.id),
-      ]);
-    } else {
-      return CustomScrollView(slivers: [
-        SliverList(
-          delegate: SliverChildListDelegate(
-            [
-              comicMethod.containsKey(widget.content["record"].source)
-                  ? Container()
-                  : comicTags(context, snapshot),
-            ],
-          ),
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.all(5),
-          sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              childAspectRatio: 3.5,
-              crossAxisSpacing: 15.0,
-              mainAxisSpacing: 10.0,
-            ),
-            delegate: SliverChildListDelegate(chapters),
-          ),
-        ),
-      ]);
+      ]),
+      floatingActionButton: floatingButtonWidget(context),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+    );
+  }
+
+  Widget comic18ChapterGrid(
+      BuildContext context, AsyncSnapshot<ComicInfo> snapshot) {
+    if (snapshot.hasError || !snapshot.hasData) {
+      return const MyWaiting();
     }
+    _comicInfoRes = snapshot.requireData;
+    ComicSimple record = widget.content["record"];
+    _length = snapshot.requireData.chapters.length;
+    var seqList = snapshot.requireData.chapters.reversed.toList();
+    var reversed = _reversed
+        ? snapshot.requireData.chapters.reversed.toList()
+        : snapshot.requireData.chapters.toList();
+    List<Widget> chapters = [];
+    for (int index = 0; index < reversed.length; index++) {
+      Chapter chapter = reversed[index];
+      bool highlight = _index == index;
+      chapters.add(OutlinedButton(
+          onPressed: () {
+            _index = index;
+            saveIndex(record);
+            var cloned = ComicInfo.fromJson(
+                jsonDecode(jsonEncode(snapshot.requireData)));
+            cloned.chapters = seqList;
+            Navigator.of(context)
+                .pushNamed(Routes.myComicReaderRoute, arguments: {
+              "chapters": seqList,
+              "index": !_reversed ? _length! - 1 - _index! : _index!,
+              "source": record.source,
+              "comicInfo": cloned,
+              "comicSimple": widget.content["record"],
+              "reversed": _reversed,
+              "reversedIndex": _reversed ? _length! - 1 - _index! : _index!,
+            }).whenComplete(() => setState(() {}));
+          },
+          style: ButtonStyle(
+            minimumSize: MaterialStateProperty.all(Size.infinite),
+            maximumSize: MaterialStateProperty.all(Size.infinite),
+            backgroundColor:
+                highlight ? MaterialStateProperty.all(Colors.blue) : null,
+            shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30.0))),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          child: Center(
+            child: Text(
+              chapter.title,
+              style: TextStyle(fontSize: 13, color: fontColor),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          )));
+    }
+
+    var chaptersWidget = Scaffold(
+      body: CustomScrollView(slivers: [
+        SliverList(
+          delegate: SliverChildListDelegate(
+            [
+              comicMethod.containsKey(widget.content["record"].source)
+                  ? Container()
+                  : comicTags(context, snapshot),
+            ],
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.all(5),
+          sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              childAspectRatio: 3.5,
+              crossAxisSpacing: 15.0,
+              mainAxisSpacing: 10.0,
+            ),
+            delegate: SliverChildListDelegate(chapters),
+          ),
+        ),
+      ]),
+      floatingActionButton: floatingButtonWidget(context),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+    );
+
+    return DefaultTabController(
+      length: tabs.length,
+      initialIndex: 0,
+      child: Column(children: [
+        TabBar(
+          labelColor: Colors.black,
+          isScrollable: false,
+          tabs: tabs.map<Widget>((name) => Tab(text: name)).toList(),
+        ),
+        Expanded(
+          child: TabBarView(
+            children: [chaptersWidget, relatedWidget(record.id)],
+          ),
+        ),
+      ]),
+    );
   }
 
   Widget relatedWidget(String id) {
@@ -463,31 +534,36 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
           BuildContext context,
           AsyncSnapshot snapshot,
         ) {
+          if (snapshot.hasError || !snapshot.hasData) {
+            return const MyWaiting();
+          }
           var data = snapshot.data;
-          return SliverPadding(
-            padding: const EdgeInsets.only(top: 20),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 5.0,
-                mainAxisSpacing: 5.0,
-                childAspectRatio: 4 / 5,
+          return CustomScrollView(slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.only(top: 5),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 5.0,
+                  mainAxisSpacing: 5.0,
+                  childAspectRatio: 4 / 5,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) {
+                    return MyGridGestureDetector(
+                      record: data![index],
+                      // setterLatest: onTap,
+                      child: ComicSimpleItem(
+                        comicSimple: data[index],
+                        isList: false,
+                      ),
+                    );
+                  },
+                  childCount: data?.length ?? 0,
+                ),
               ),
-              delegate: SliverChildBuilderDelegate(
-                (BuildContext context, int index) {
-                  return MyGridGestureDetector(
-                    record: data![index],
-                    // setterLatest: onTap,
-                    child: ComicSimpleItem(
-                      comicSimple: data[index],
-                      isList: false,
-                    ),
-                  );
-                },
-                childCount: data?.length ?? 0,
-              ),
-            ),
-          );
+            )
+          ]);
         });
   }
 

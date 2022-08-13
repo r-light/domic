@@ -6,6 +6,9 @@ class ConstantString {
   static const source = "图源";
   static const setting = "设置";
   static const about = "关于";
+  static const chapters = "章节";
+  static const comments = "评论";
+  static const recommendations = "推荐";
   static const comicPageTitle = "漫画";
   static const searchPageTitle = "搜索";
 
