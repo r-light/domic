@@ -372,4 +372,59 @@ class Jmtt extends Parser {
     });
     return list;
   }
+
+  Future<MapEntry<List<CommentInfo>, bool>> commentById(String id,
+      {int page = 1}) async {
+    List<String> ids = id.split("/");
+    for (var t in ids) {
+      if (int.tryParse(t) != null) {
+        id = t;
+        break;
+      }
+    }
+    var res = <CommentInfo>[];
+    var resp = (await MyDio().getHtml(RequestOptions(
+        method: "POST",
+        baseUrl: domainBase,
+        path: '/ajax/album_pagination',
+        data: {"video_id": id, "page": page},
+        contentType: Headers.formUrlEncodedContentType)));
+    var content = resp.value?.data.toString() ?? "";
+    var doc = parse(content);
+    doc.querySelectorAll(".panel.panel-default.timeline-panel").forEach((e) {
+      var left = e.querySelectorAll(".timeline-left");
+      var right = e.querySelectorAll(".timeline-right");
+      int length = left.length < right.length ? left.length : right.length;
+      CommentInfo? comment;
+      for (int i = 0; i < length; i++) {
+        var avatarInfo = left[i];
+        var avatar = avatarInfo.querySelector("img")?.attributes["src"] ?? "";
+        if (!avatar.startsWith("http")) {
+          if (avatar.startsWith("/")) {
+            avatar = domainBase.substring(0, domainBase.length - 1) + avatar;
+          } else {
+            avatar = domainBase + avatar;
+          }
+        }
+        var commentInfo = right[i];
+        var name = commentInfo.querySelector(".timeline-username")?.text ?? "";
+        name = trimAllLF(name);
+        var content =
+            commentInfo.querySelector(".timeline-content")?.text ?? "";
+        content = trimAllLF(content);
+        var date = commentInfo.querySelector(".timeline-date")?.text ?? "";
+        date = trimAllLF(date);
+        if (comment == null) {
+          comment = CommentInfo(name, avatar, date, content, []);
+        } else {
+          comment.reply.add(CommentInfo(name, avatar, date, content, []));
+        }
+      }
+      if (comment != null) res.add(comment);
+    });
+    bool hasNext = false;
+    var next = doc.querySelectorAll("div").last.text;
+    if (next.contains("查看更多")) hasNext = true;
+    return MapEntry(res, hasNext);
+  }
 }

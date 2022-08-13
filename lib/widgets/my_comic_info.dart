@@ -8,6 +8,7 @@ import 'package:domic/common/common.dart';
 import 'package:domic/common/global.dart';
 import 'package:domic/common/hive.dart';
 import 'package:domic/widgets/components/my_comic_card.dart';
+import 'package:domic/widgets/components/my_comic_comment18.dart';
 import 'package:domic/widgets/components/my_grid_gesture_detector.dart';
 import 'package:domic/widgets/components/my_setting_action.dart';
 import 'package:domic/widgets/components/my_status.dart';
@@ -24,7 +25,11 @@ class MyComicInfoPage extends StatefulWidget {
 }
 
 class _MyComicInfoPageState extends State<MyComicInfoPage> {
-  static const tabs = [ConstantString.chapters, ConstantString.recommendations];
+  static const tabs = [
+    ConstantString.chapters,
+    ConstantString.comments,
+    ConstantString.recommendations
+  ];
   late Decoration? dec =
       MediaQuery.of(context).platformBrightness == Brightness.dark
           ? null
@@ -161,8 +166,6 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
           ]);
         },
       ),
-      // floatingActionButton: floatingButtonWidget(context),
-      // floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
     );
   }
 
@@ -513,13 +516,19 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
       initialIndex: 0,
       child: Column(children: [
         TabBar(
-          labelColor: Colors.black,
+          indicatorColor: Theme.of(context).colorScheme.secondary,
+          labelColor: Theme.of(context).colorScheme.secondary,
+          unselectedLabelColor: Theme.of(context).textTheme.bodyText1?.color,
           isScrollable: false,
           tabs: tabs.map<Widget>((name) => Tab(text: name)).toList(),
         ),
         Expanded(
           child: TabBarView(
-            children: [chaptersWidget, relatedWidget(record.id)],
+            children: [
+              chaptersWidget,
+              commmentsWidget(record.id),
+              relatedWidget(record.id)
+            ],
           ),
         ),
       ]),
@@ -565,6 +574,12 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
             )
           ]);
         });
+  }
+
+  Widget commmentsWidget(String id) {
+    return MyComicComment18(
+      id: id,
+    );
   }
 
   Widget comicTags(BuildContext context, AsyncSnapshot<ComicInfo> snapshot) {

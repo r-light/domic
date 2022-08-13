@@ -300,3 +300,12 @@ enum ReaderDirection {
   @HiveField(2)
   rightToLeft,
 }
+
+class CommentInfo {
+  late String name;
+  late String avatar;
+  late String date;
+  late String content;
+  late List<CommentInfo> reply;
+  CommentInfo(this.name, this.avatar, this.date, this.content, this.reply);
+}
