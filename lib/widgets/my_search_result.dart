@@ -36,7 +36,7 @@ class _MyComicSearchResultState extends State<MyComicSearchResult> {
   }
 
   // load more comicSimple
-  void loadMoreComicSimple() async {
+  void loadMoreComicSimple({int hour = 12}) async {
     isLoading = true;
     String text = widget.content["title"];
     if (widget.content.containsKey("source")) {
@@ -44,7 +44,7 @@ class _MyComicSearchResultState extends State<MyComicSearchResult> {
       var lazyBoxName = ConstantString.sourceToLazyBox[source]!;
       var key = comicSimplePageKey(source, text, currentPage);
       Future future;
-      if (MyHive().isInHive(lazyBoxName, key, dur: const Duration(hours: 12))) {
+      if (MyHive().isInHive(lazyBoxName, key, dur: Duration(hours: hour))) {
         future = MyHive().getInHive(lazyBoxName, key);
       } else {
         var parser = comicMethod[source] ?? comic18Method[source]!;
@@ -79,8 +79,7 @@ class _MyComicSearchResultState extends State<MyComicSearchResult> {
           if (currentPage > maxPageMap[source]!) continue;
           var lazyBoxName = ConstantString.sourceToLazyBox[source]!;
           var key = comicSimplePageKey(source, text, currentPage);
-          if (MyHive()
-              .isInHive(lazyBoxName, key, dur: const Duration(hours: 12))) {
+          if (MyHive().isInHive(lazyBoxName, key, dur: Duration(hours: hour))) {
             futures.add(MyHive().getInHive(lazyBoxName, key));
           } else {
             var parser = comicMethod[source] ?? comic18Method[source]!;
@@ -132,6 +131,16 @@ class _MyComicSearchResultState extends State<MyComicSearchResult> {
           title: Text(widget.content["title"], textAlign: TextAlign.left),
           centerTitle: false,
           actions: [
+            IconButton(
+                onPressed: () => setState(() {
+                      maxPageMap.clear();
+                      maxPage = 1;
+                      currentPage = 1;
+                      totalNum = 0;
+                      records.clear();
+                      loadMoreComicSimple(hour: 0);
+                    }),
+                icon: const Icon(Icons.refresh)),
             context.select((Configs configs) => configs.listViewInSearchResult)
                 ? IconButton(
                     onPressed: () => changeView(context),

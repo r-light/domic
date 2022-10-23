@@ -20,6 +20,7 @@ class ConstantString {
   static const bainian = "bainian";
   static const qimiao = "qimiao";
   static const qiman = "qiman";
+  static const maofly = "maofly";
 
   static const pufeiCacheBox = "pufeiCacheLazy";
   static const jmttCacheBox = "jmttCacheLazy";
@@ -27,6 +28,7 @@ class ConstantString {
   static const bainianCacheBox = "bainianCacheLazy";
   static const qimiaoCacheBox = "qimiaoCacheLazy";
   static const qimanCacheBox = "qimanCacheLazy";
+  static const maoflyCacheBox = "maoflyCacheLazy";
 
   static const comic18DownloadBox = "comic18DownloadLazy";
 
@@ -44,6 +46,7 @@ class ConstantString {
     bainianCacheBox,
     qimiaoCacheBox,
     qimanCacheBox,
+    maoflyCacheBox,
   ];
 
   static const sourceToLazyBox = {
@@ -53,6 +56,7 @@ class ConstantString {
     bainian: bainianCacheBox,
     qimiao: qimiaoCacheBox,
     qiman: qimanCacheBox,
+    maofly: maoflyCacheBox
   };
 
   static const readerDirectionName = ["从上到下", "从左到右", "从右到左"];
@@ -79,7 +83,7 @@ class Routes {
   static const String myDownloadRoute = "MyDownload";
   static const routes = {
     // ConstantString.pufei: myComicTagRoute,
-    // ConstantString.gufeng: myComicTagRoute,
+    ConstantString.gufeng: myComicTagRoute,
     // ConstantString.bainian: myComicTagRoute,
     ConstantString.qiman: myComicTagRoute,
     ConstantString.jmtt: myComicTagRoute,

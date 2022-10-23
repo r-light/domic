@@ -11,6 +11,7 @@ const sourcesName = {
   "bainian": "百年漫画",
   "qimiao": "奇妙漫画",
   "qiman": "奇漫屋",
+  "maofly": "漫画猫",
 };
 
 @HiveType(typeId: 1)

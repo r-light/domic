@@ -307,7 +307,7 @@ class Jmtt extends Parser {
       var text = trimAllLF(element.text);
       res.add(MapEntry(text, href));
     });
-    return res.sublist(8);
+    return res.sublist(10);
   }
 
   Future<ComicPageData> comicByTab(String path, int page) async {
