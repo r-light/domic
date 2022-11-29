@@ -9,8 +9,8 @@ import 'package:html/parser.dart';
 
 class Qiman extends Parser {
   static Qiman? _instance;
-  String domainBase = "http://qiman57.com/";
-  String searchBase = "http://qiman57.com/spotlight/";
+  String domainBase = "http://m.qiman58.com/";
+  String searchBase = "http://m.qiman58.com/spotlight/";
 
   Qiman._internal() {
     _instance = this;
@@ -95,7 +95,7 @@ class Qiman extends Parser {
         ?.querySelectorAll(".txtItme")
         .forEach((element) {
       if (element.text.contains("作者")) {
-        author = element.text.split(" ").last;
+        author = element.text.split("：").last;
         author = trimAllLF(author);
       }
     });
@@ -105,6 +105,9 @@ class Qiman extends Parser {
 
     var description =
         doc.querySelector(".detail-intro>.comic-intro")?.text ?? "";
+    if (description.contains("介绍")) {
+      description = description.split(":").last;
+    }
     description = trimAllLF(description);
     List<Chapter> chapters = [];
 
@@ -118,7 +121,7 @@ class Qiman extends Parser {
     resp = (await MyDio().getHtml(RequestOptions(
         method: "POST",
         baseUrl: domainBase,
-        path: '/bookchapter/',
+        path: "/bookchapter/",
         data: {"id": pureId, "id2": 1},
         contentType: Headers.formUrlEncodedContentType)));
     if (resp.key != -1) {
