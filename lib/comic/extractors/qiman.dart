@@ -6,11 +6,12 @@ import 'package:domic/comic/extractors/dto.dart';
 import 'package:domic/comic/extractors/parser_entity.dart';
 import 'package:domic/comic/extractors/utils.dart';
 import 'package:html/parser.dart';
+import 'package:image/image.dart';
 
 class Qiman extends Parser {
   static Qiman? _instance;
-  String domainBase = "http://m.qiman58.com/";
-  String searchBase = "http://m.qiman58.com/spotlight/";
+  String domainBase = "http://www.qiman58.com/";
+  String searchBase = "http://www.qiman58.com/search.php";
 
   Qiman._internal() {
     _instance = this;
@@ -79,32 +80,27 @@ class Qiman extends Parser {
     var content = resp.value?.data.toString();
     var doc = parse(content);
 
-    var comicInfoBox = doc.querySelector(".comic-info-box");
-    var thumb =
-        comicInfoBox?.querySelector(".box-back1>img")?.attributes["src"] ?? "";
+    var comicInfoBox = doc.querySelector(".comicInfo");
+    var thumb = comicInfoBox?.querySelector("img")?.attributes["src"] ?? "";
 
-    var title =
-        comicInfoBox?.querySelector(".box-back2")?.firstChild?.text ?? "";
+    var title = comicInfoBox?.querySelector(".name_mh")?.text ?? "";
     title = trimAllLF(title);
 
-    var state = ComicState.unknown;
+    var comicState =
+        comicInfoBox?.querySelectorAll("span.ib.s").last.text.contains("连载");
+    var state = comicState == null
+        ? ComicState.unknown
+        : (comicState ? ComicState.ongoing : ComicState.completed);
 
-    var author = "";
-    comicInfoBox
-        ?.querySelector(".box-back2")
-        ?.querySelectorAll(".txtItme")
-        .forEach((element) {
-      if (element.text.contains("作者")) {
-        author = element.text.split("：").last;
-        author = trimAllLF(author);
-      }
-    });
+    var author =
+        comicInfoBox?.querySelector("span.ib.l")?.text.split("：").last ?? "";
+    author = trimAllLF(author);
 
-    var updateDate = "";
+    var updateDate =
+        comicInfoBox?.querySelector("span.ib.s")?.text.split("：").last ?? "";
     var uploadDate = updateDate;
 
-    var description =
-        doc.querySelector(".detail-intro>.comic-intro")?.text ?? "";
+    var description = comicInfoBox?.querySelector(".content")?.text ?? "";
     if (description.contains("介绍")) {
       description = description.split(":").last;
     }
@@ -113,9 +109,10 @@ class Qiman extends Parser {
 
     // parse chapter
     var pureId = getId(id);
-    doc.querySelector(".list-wrap")?.querySelectorAll("li").forEach((e) {
+    doc.querySelector("#chapter-list1")?.querySelectorAll("a").forEach((e) {
       var title = e.text;
-      var url = e.querySelector("a")?.attributes["href"] ?? "";
+      title = trimAllLF(title);
+      var url = e.attributes["href"] ?? "";
       chapters.add(Chapter(title, url, 0, []));
     });
     resp = (await MyDio().getHtml(RequestOptions(
@@ -127,10 +124,12 @@ class Qiman extends Parser {
     if (resp.key != -1) {
       var table = jsonDecode(resp.value?.data);
       for (var m in table) {
-        var title = m["name"] ?? "";
+        var title = m["chaptername"] ?? "";
         var url = "";
-        // ignore: prefer_interpolation_to_compose_strings
-        if (m.containsKey("id")) url = ("/" + pureId + "/" + m["id"] + ".html");
+        if (m.containsKey("chapterid")) {
+          // ignore: prefer_interpolation_to_compose_strings
+          url = ("/" + pureId + "/" + m["chapterid"] + ".html");
+        }
         chapters.add(Chapter(title, url, 0, []));
       }
     }
@@ -180,11 +179,8 @@ class Qiman extends Parser {
     var content = resp.value?.data.toString();
     var doc = parse(content);
     List<MapEntry<String, String>> res = [];
-    doc
-        .querySelector(".rank-nav>ul")
-        ?.querySelectorAll("li")
-        .forEach((element) {
-      var href = element.children[0].attributes["href"] ?? "";
+    doc.querySelector(".rankNavNew")?.querySelectorAll("a").forEach((element) {
+      var href = element.attributes["href"] ?? "";
       var text = trimAllLF(element.text);
       res.add(MapEntry(text, href));
     });
@@ -193,77 +189,35 @@ class Qiman extends Parser {
 
   Future<ComicPageData> comicByTab(String path, int page) async {
     List<ComicSimple> list = [];
-    if (page == 1) {
-      var resp = await MyDio().getHtml(
-        RequestOptions(path: path, baseUrl: domainBase, method: "GET"),
-      );
-      var content = resp.value?.data.toString() ?? "";
-      var doc = parse(content);
+    path = path.split("-").first;
+    path += "-$page.html";
+    var resp = await MyDio().getHtml(
+      RequestOptions(path: path, baseUrl: domainBase, method: "GET"),
+    );
+    var content = resp.value?.data.toString() ?? "";
+    var doc = parse(content);
 
-      doc.querySelectorAll(".rank-list>div").forEach((e) {
-        var id = e.querySelector("a")?.attributes["href"] ?? "";
+    doc.querySelectorAll(".bookList_3>div").forEach((e) {
+      var id = e.querySelector("a")?.attributes["href"] ?? "";
 
-        var thumb = e.querySelector("img")?.attributes["data-src"] ?? "";
-        var reg = RegExp(r'\(([\s\S]*?)\)');
-        var match = reg.firstMatch(thumb);
-        if (match != null) {
-          thumb = match.group(1)!;
-        }
+      var thumb = e.querySelector("img")?.attributes["src"] ?? "";
 
-        var title = e.querySelector(".comic-name")?.text ?? "";
-        title = trimAllLF(title);
+      var title = e.querySelector(".title")?.text ?? "";
+      title = trimAllLF(title);
 
-        var author = e.querySelector(".comic-author")?.text ?? "";
-        author = trimAllLF(author);
+      var author = e.querySelector(".tip")?.text ?? "";
+      author = trimAllLF(author);
 
-        var updateDate = "";
-        var source = "qiman";
-        var sourceName = sourcesName["qiman"] ?? "";
+      var updateDate = "";
+      var source = "qiman";
+      var sourceName = sourcesName["qiman"] ?? "";
 
-        list.add(ComicSimple(
-            id, title, thumb, author, updateDate, source, sourceName));
-      });
-    } else {
-      page--;
-      int type = 1;
-      for (int i = 0; i < path.length; i++) {
-        if (path[i].codeUnitAt(0) >= '0'.codeUnitAt(0) &&
-            path[i].codeUnitAt(0) <= '9'.codeUnitAt(0)) {
-          type = int.parse(path[i]);
-          break;
-        }
-      }
-      var resp = await MyDio().getHtml(
-        RequestOptions(
-            path: "/ajaxf/",
-            baseUrl: domainBase,
-            method: "GET",
-            queryParameters: {"page_num": page, "type": type},
-            headers: {"Referer": domainBase}),
-      );
-      var table = jsonDecode(resp.value?.data);
-      for (var m in table) {
-        // ignore: prefer_interpolation_to_compose_strings
-        var id = "/" + m["id"] + "/";
+      list.add(ComicSimple(
+          id, title, thumb, author, updateDate, source, sourceName));
+    });
 
-        var thumb = m["imgurl"] ?? "";
-
-        var title = m["name"] ?? "";
-        title = trimAllLF(title);
-
-        var author = m["atuhor"] ?? "";
-        author = trimAllLF(author);
-
-        var updateDate = "";
-        var source = "qiman";
-        var sourceName = sourcesName["qiman"] ?? "";
-
-        list.add(ComicSimple(
-            id, title, thumb, author, updateDate, source, sourceName));
-      }
-    }
-    var maxPage = 5;
-    return ComicPageData(maxPage, list, maxNum: 100);
+    var maxPage = 10;
+    return ComicPageData(maxPage, list, maxNum: 200);
   }
 
   String getId(String id) {
