@@ -6,7 +6,6 @@ import 'package:domic/comic/extractors/dto.dart';
 import 'package:domic/comic/extractors/parser_entity.dart';
 import 'package:domic/comic/extractors/utils.dart';
 import 'package:html/parser.dart';
-import 'package:image/image.dart';
 
 class Qiman extends Parser {
   static Qiman? _instance;
@@ -155,12 +154,12 @@ class Qiman extends Parser {
     // parse page
     var pageCount = 1;
     List<ComicSimple> list = [];
-    doc.querySelectorAll(".search-result>div").forEach((e) {
-      var title = e.querySelector(".comic-name")?.text ?? "";
+    doc.querySelectorAll(".bookList_3>div").forEach((e) {
+      var title = e.querySelector(".title")?.text ?? "";
       title = trimAllLF(title);
       var thumb = e.querySelector("img")?.attributes["src"] ?? "";
       var id = e.querySelector("a")?.attributes["href"] ?? "";
-      var author = e.querySelector(".comic-author")?.text ?? "";
+      var author = e.querySelector(".tip")?.text ?? "";
       author = trimAllLF(author);
       var updateDate = "";
       var source = "qiman";
