@@ -66,6 +66,7 @@ class Qiman extends Parser {
       for (var element in res) {
         chapter.images.add(ImageInfo(element));
       }
+      chapter.len = chapter.images.length;
     }
   }
 

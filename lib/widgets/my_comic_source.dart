@@ -151,9 +151,11 @@ class _MyComicSourceState extends State<MyComicSource> {
         return false;
       }
       await parser.comicByChapter(comicInfo, idx: 0);
+
       if (comicInfo.chapters[0].len == 0) {
         return false;
       }
+
       var resp = await MyDio().dio.get(comicInfo.chapters[0].images[0].src);
       if (resp.statusCode != 200) {
         return false;
