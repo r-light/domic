@@ -114,6 +114,8 @@ Widget normalImageWidget(MapEntry<int, ImageInfo> entry, dynamic setter,
       info.width = state.extendedImageInfo!.image.width;
       return null;
     },
+    timeLimit: const Duration(seconds: 5),
+    timeRetry: const Duration(seconds: 1),
   );
 }
 
@@ -162,8 +164,10 @@ class _MyJmttComicImageState extends State<MyJmttComicImage>
     if (MyHive().isInHive(lazyBoxName, key)) {
       res = await MyHive().getInHive(lazyBoxName, key);
     } else {
-      var resp = await MyDio().dio.get<List<int>>(key,
-          options: Options(responseType: ResponseType.bytes));
+      var resp = await MyDio().dio.get<List<int>>(
+            key,
+            options: Options(responseType: ResponseType.bytes),
+          );
       var bytes = resp.data;
       if (bytes == null) return Uint8List(0);
       Map<String, dynamic> params = {};

@@ -6,7 +6,8 @@ class MyDio {
 
   MyDio._internal() {
     dio = Dio();
-    dio.options.connectTimeout = 5000;
+    dio.options.connectTimeout = 3000;
+    dio.options.receiveTimeout = 2000;
     _instance = this;
   }
 
