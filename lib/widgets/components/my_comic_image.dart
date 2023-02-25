@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
@@ -16,8 +15,8 @@ import 'package:hive/hive.dart';
 import 'package:image/image.dart' as image_tool;
 
 double getRealHeight(
-    double maxWidth, int? width, int? height, double dafaultHeight) {
-  if (width == null || height == null || width == 0) return dafaultHeight;
+    double maxWidth, int? width, int? height, double defaultHeight) {
+  if (width == null || height == null || width == 0) return defaultHeight;
   return maxWidth / width * height;
 }
 

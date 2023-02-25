@@ -345,7 +345,6 @@ class Configs with ChangeNotifier {
     box.put(readerTypeKey, value);
   }
 
-
   bool get showTimeInReader => _showTimeInReader;
 
   set showTimeInReader(bool value) {
@@ -416,9 +415,17 @@ class ComicSource with ChangeNotifier {
     sourceMap = Map<String, bool>.from(box.get(sourceMapKey) ?? {});
     source18Map = Map<String, bool>.from(box.get(sourceMap18Key) ?? {});
     if (sourceMap.length != comicMethod.length) {
-      for (String source in comicMethod.keys) {
-        sourceMap.putIfAbsent(source, () => true);
+      var commonKeys =
+          sourceMap.keys.toSet().intersection(comicMethod.keys.toSet());
+      var remainKeys = comicMethod.keys.toSet()..removeAll(commonKeys);
+      Map<String, bool> map = {};
+      for (var source in commonKeys) {
+        map[source] = sourceMap[source]!;
       }
+      for (var source in remainKeys) {
+        sourceMap[source] = true;
+      }
+      sourceMap = map;
       box.put(sourceMapKey, sourceMap);
     }
     if (source18Map.isEmpty) {

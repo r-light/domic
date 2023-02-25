@@ -8,12 +8,12 @@ import 'package:domic/comic/extractors/qiman.dart';
 import 'package:domic/comic/extractors/qimiao.dart';
 
 final Map<String, Parser> comicMethod = {
-  "pufei": Pufei(),
+  // "pufei": Pufei(),
   "gufeng": Gufeng(),
-  "bainian": Bainian(),
-  "qimiao": Qimiao(),
+  // "bainian": Bainian(),
+  // "qimiao": Qimiao(),
   "qiman": Qiman(),
-  "maofly": MaoFly(),
+  // "maofly": MaoFly(),
 };
 
 final Map<String, Parser> comic18Method = {
