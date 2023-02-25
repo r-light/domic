@@ -1,6 +1,7 @@
 import 'package:domic/comic/extractors/bainian.dart';
 import 'package:domic/comic/extractors/gufeng.dart';
 import 'package:domic/comic/extractors/jmtt.dart';
+import 'package:domic/comic/extractors/kuman.dart';
 import 'package:domic/comic/extractors/maofly.dart';
 import 'package:domic/comic/extractors/parser_entity.dart';
 import 'package:domic/comic/extractors/pufei.dart';
@@ -14,6 +15,7 @@ final Map<String, Parser> comicMethod = {
   // "qimiao": Qimiao(),
   "qiman": Qiman(),
   // "maofly": MaoFly(),
+  "kuman": Kuman(),
 };
 
 final Map<String, Parser> comic18Method = {

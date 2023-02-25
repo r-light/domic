@@ -7,8 +7,8 @@ import 'package:html/parser.dart';
 
 class Gufeng extends Parser {
   static Gufeng? _instance;
-  String domainBase = "https://www.123gf.com/";
-  String searchBase = "https://www.123gf.com/search/";
+  String domainBase = "https://www.gufengmh.com/";
+  String searchBase = "https://www.gufengmh.com/search/";
 
   Gufeng._internal() {
     _instance = this;
@@ -180,7 +180,6 @@ class Gufeng extends Parser {
       var text = trimAllLF(element.text);
       res.add(MapEntry(text, href));
     });
-
     return res;
   }
 

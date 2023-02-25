@@ -423,7 +423,7 @@ class ComicSource with ChangeNotifier {
         map[source] = sourceMap[source]!;
       }
       for (var source in remainKeys) {
-        sourceMap[source] = true;
+        map[source] = true;
       }
       sourceMap = map;
       box.put(sourceMapKey, sourceMap);
