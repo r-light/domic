@@ -24,11 +24,17 @@ Map<String, dynamic> convertJmttHelper(Map<String, dynamic> params) {
   // ignore: prefer_function_declarations_over_variables
   var func = (int aid, String pid) {
     int a = 10;
-    if (aid >= 268850) {
-      var m = md5.convert(utf8.encode(aid.toString() + pid)).toString();
-      var hash = m.codeUnitAt(m.length - 1);
+
+    var m = md5.convert(utf8.encode(aid.toString() + pid)).toString();
+    var hash = m.codeUnitAt(m.length - 1);
+    if (aid >= 268850 && aid <= 421925) {
       hash %= 10;
-      return (hash + 1) * 2;
+    } else if (aid >= 421926) {
+      hash %= 8;
+    }
+
+    if (hash >= 0 && hash <= 9) {
+      a = (hash + 1) * 2;
     }
     return a;
   };
