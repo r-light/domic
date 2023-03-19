@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:domic/comic/api.dart';
 import 'package:domic/comic/extractors/dto.dart';
+import 'package:domic/comic/extractors/jmtt.dart';
 import 'package:domic/common/common.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -282,6 +283,7 @@ class Configs with ChangeNotifier {
   static const showFooterInGridViewKey = "showFooterInGridView";
   static const showBottomSliderKey = "showBottomSliderKey";
   static const readerTypeKey = "readerType";
+  static const jmttDomainKey = "jmttDomain";
 
   late bool _listViewInSearchResult;
   late bool _listViewInTagResult;
@@ -294,6 +296,7 @@ class Configs with ChangeNotifier {
   late bool _showBottomSlider;
   late ReaderDirection _readerDirection;
   late ReaderType _readerType;
+  late String _jmttDomain;
   late Box box;
 
   Configs() {
@@ -311,6 +314,8 @@ class Configs with ChangeNotifier {
     readerDirection =
         box.get(readerDirectionKey) ?? ReaderDirection.topToBottom;
     _readerType = box.get(readerTypeKey) ?? ReaderType.scroll;
+    _jmttDomain = box.get(jmttDomainKey) ?? Jmtt().permanentDomain;
+    Jmtt().domainBase = _jmttDomain;
   }
 
   bool get listViewInSearchResult => _listViewInSearchResult;
@@ -399,6 +404,13 @@ class Configs with ChangeNotifier {
     _showBottomSlider = value;
     notifyListeners();
     box.put(showBottomSliderKey, value);
+  }
+
+  String get jmttDomain => _jmttDomain;
+
+  set jmttDomain(String value) {
+    _jmttDomain = value;
+    box.put(jmttDomainKey, value);
   }
 }
 

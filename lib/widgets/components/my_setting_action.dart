@@ -1,4 +1,7 @@
+import 'package:dio/dio.dart';
+import 'package:domic/comic/extractors/dio.dart';
 import 'package:domic/comic/extractors/dto.dart';
+import 'package:domic/comic/extractors/jmtt.dart';
 import 'package:domic/common/common.dart';
 import 'package:domic/common/global.dart';
 import 'package:extended_image/extended_image.dart';
@@ -35,7 +38,7 @@ class _SettingsActionState extends State<MySettingsAction> {
 class MySetting extends StatelessWidget {
   const MySetting({Key? key}) : super(key: key);
 
-  static List<String> tabs = ["通用", "阅读"];
+  static List<String> tabs = ["通用", "阅读", "禁漫天堂"];
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +53,8 @@ class MySetting extends StatelessWidget {
             tabs: tabs.map<Widget>((e) => Tab(text: e)).toList(),
           ),
         ),
-        body: const TabBarView(children: [MyGeneralSetting(), MyReadSetting()]),
+        body: const TabBarView(
+            children: [MyGeneralSetting(), MyReadSetting(), MyJmttSetting()]),
       ),
     );
   }
@@ -498,6 +502,99 @@ class _MyReadSettingState extends State<MyReadSetting> {
             },
           ),
         );
+      },
+    );
+  }
+}
+
+class MyJmttSetting extends StatefulWidget {
+  const MyJmttSetting({Key? key}) : super(key: key);
+
+  @override
+  State<MyJmttSetting> createState() => _MyJmttSettingState();
+}
+
+class _MyJmttSettingState extends State<MyJmttSetting> {
+  Future<List<String>> urls = Jmtt().parseCandidateDomain();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(5.0),
+      children: <Widget>[
+        ListTile(
+          title: const Text("设置域名"),
+          subtitle: Text("当前域名: ${Jmtt().domainBase}"),
+          onTap: () async {
+            String? url = await showListDialog(context, "设置域名");
+            if (url == null) return;
+            if (!mounted) return;
+            setState(() {
+              Provider.of<Configs>(context, listen: false).jmttDomain = url;
+              Jmtt().domainBase = url;
+              MyDio()
+                  .getHtml(RequestOptions(
+                method: "GET",
+                path: url,
+              ))
+                  .then((res) {
+                if (res.key == 200) {
+                  Global.showSnackBar("$url 测试成功\n已经阅读过的漫画在章节目录\n点击刷新按钮更换域名",
+                      const Duration(seconds: 5));
+                } else {
+                  Global.showSnackBar("$url 测试失败");
+                }
+              });
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  Future<String?> showListDialog(BuildContext context, String text) async {
+    return await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        var child = FutureBuilder<List<String>>(
+          future: urls,
+          builder: ((context, snapshot) {
+            if (snapshot.hasError || !snapshot.hasData) {
+              return ListView.builder(
+                shrinkWrap: true,
+                itemCount: 1,
+                itemBuilder: (BuildContext context, int index) {
+                  return ListTile(
+                    title: Text(Jmtt().permanentDomain),
+                    subtitle: const Text("需要科学上网，可能不支持韩国、日本节点"),
+                    onTap: () =>
+                        Navigator.of(context).pop(Jmtt().permanentDomain),
+                  );
+                },
+              );
+            }
+            return ListView.builder(
+              shrinkWrap: true,
+              itemCount: snapshot.requireData.length,
+              itemBuilder: (BuildContext context, int index) {
+                if (index == 0) {
+                  return ListTile(
+                    title: Text(snapshot.requireData[index]),
+                    subtitle: const Text("需要科学上网，可能不支持韩国、日本节点"),
+                    onTap: () =>
+                        Navigator.of(context).pop(snapshot.requireData[index]),
+                  );
+                }
+                return ListTile(
+                  title: Text(snapshot.requireData[index]),
+                  onTap: () =>
+                      Navigator.of(context).pop(snapshot.requireData[index]),
+                );
+              },
+            );
+          }),
+        );
+        return Dialog(child: child);
       },
     );
   }

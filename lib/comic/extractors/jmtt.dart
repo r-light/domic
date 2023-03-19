@@ -7,8 +7,10 @@ import 'package:html/parser.dart';
 
 class Jmtt extends Parser {
   static Jmtt? _instance;
+  final String permanentDomain = "https://18comic.org/";
   String domainBase = "https://18comic.org/";
   String searchPath = "/search/photos/";
+  String domainSites = "https://jmcomic1.bet/";
 
   Jmtt._internal() {
     _instance = this;
@@ -426,5 +428,33 @@ class Jmtt extends Parser {
     var next = doc.querySelectorAll("div").last.text;
     if (next.contains("查看更多")) hasNext = true;
     return MapEntry(res, hasNext);
+  }
+
+  Future<List<String>> parseCandidateDomain() async {
+    var content = await MyDio().getHtml(RequestOptions(
+      path: domainSites,
+      method: "GET",
+    ));
+
+    List<String> res = [permanentDomain];
+    var doc = parse(content.value?.data.toString() ?? "");
+    doc.querySelectorAll("p").forEach((p) {
+      var available = p.text.contains("內地網域") || (p.text.contains("分流"));
+      if (available) {
+        for (var text in p.text.split("\n")) {
+          if (text.contains(".")) {
+            var url = text.trim();
+            if (!url.startsWith("http")) {
+              url = "https://$url";
+            }
+            if (!url.endsWith("/")) {
+              url = "$url/";
+            }
+            res.add(url);
+          }
+        }
+      }
+    });
+    return res;
   }
 }
