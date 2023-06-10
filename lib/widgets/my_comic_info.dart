@@ -123,7 +123,7 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
       ),
       ...alwaysInActions()
     ];
-    if (comic18Method.containsKey(record.source)) {
+    /* if (comic18Method.containsKey(record.source)) {
       actions.insert(
           0,
           IconButton(
@@ -141,7 +141,7 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
                       "lazyboxName": ConstantString.comic18DownloadBox,
                     });
               }));
-    }
+    } */
 
     return Scaffold(
       appBar: AppBar(
