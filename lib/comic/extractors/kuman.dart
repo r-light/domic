@@ -9,8 +9,8 @@ import 'package:html/parser.dart';
 
 class Kuman extends Parser {
   static Kuman? _instance;
-  String domainBase = "http://www.kumw6.com/";
-  String searchBase = "http://www.kumw6.com/search";
+  String domainBase = "http://www.kumw9.com/";
+  String searchBase = "http://www.kumw9.com/search";
 
   Kuman._internal() {
     _instance = this;
@@ -205,6 +205,7 @@ class Kuman extends Parser {
       RequestOptions(
           baseUrl: domainBase, path: "/rank/1-1.html", method: "GET"),
     );
+    print(resp.key);
     var content = resp.value?.data.toString();
     var doc = parse(content);
     List<MapEntry<String, String>> res = [];

@@ -95,7 +95,7 @@ class Routes {
     // ConstantString.bainian: myComicTagRoute,
     ConstantString.qiman: myComicTagRoute,
     ConstantString.kuman: myComicTagRoute,
-    ConstantString.baozi: myComicTagRoute,
+    // ConstantString.baozi: myComicTagRoute,
     // ConstantString.jmtt: myComicTagRoute,
   };
 }

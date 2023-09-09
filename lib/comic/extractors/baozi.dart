@@ -9,6 +9,7 @@ class Baozi extends Parser {
   static Baozi? _instance;
   String domainBase = "https://baozimh.org/";
   String searchBase = "https://baozimh.org/";
+  String chapterListBase = "https://baozimh.org/chapterlist/";
 
   Baozi._internal() {
     _instance = this;
@@ -45,6 +46,7 @@ class Baozi extends Parser {
   @override
   Future<ComicInfo> comicById(String id) async {
     var resp = await MyDio().getHtml(RequestOptions(
+      baseUrl: domainBase,
       path: id,
       method: "GET",
     ));
@@ -52,62 +54,34 @@ class Baozi extends Parser {
     var doc = parse(content);
 
     var thumb = doc
-            .querySelector(".gb-grid-wrapper")
-            ?.children
-            .first
-            .querySelector("img")
+            .querySelector("#MangaCard")
+            ?.querySelector("img")
             ?.attributes["src"] ??
         "";
+    if (!thumb.startsWith("http")) {
+      thumb = domainBase + thumb;
+    }
 
-    var detailList = doc
-        .querySelector(".gb-grid-wrapper")
-        ?.children
-        .last
-        .querySelector("div.gb-inside-container");
+    var detailList = doc.querySelector("div.block.text-left.mx-auto");
 
-    var title = detailList?.querySelector("h1")?.text ?? "";
+    var title = detailList?.querySelector(".gap-unit-xs>h1")?.text ?? "";
     title = trimAllLF(title);
 
     var state = ComicState.unknown;
-    var stateText =
-        detailList?.querySelectorAll(".author-content").last.text ?? "";
-    if (stateText.isNotEmpty) {
-      if (stateText.contains("连载中")) {
-        state = ComicState.ongoing;
-      } else if (stateText.contains("已完结")) {
-        state = ComicState.completed;
-      }
-    }
 
-    var author = "";
-    detailList
-        ?.querySelectorAll(".author-content")
-        .first
-        .querySelectorAll("a")
-        .forEach((element) {
-      author += element.text;
-      author += ",";
-    });
-
-    if (author.isNotEmpty) {
-      author = author.substring(0, author.length - 1);
-    }
+    var author = detailList?.querySelector("a")?.text ?? "";
 
     var updateDate = "";
     var uploadDate = updateDate;
 
-    var description = doc.querySelector(".dynamic-entry-content")?.text ?? "";
+    var description =
+        doc.querySelector("p.text-medium.line-clamp-4.my-unit-md")?.text ?? "";
     description = trimAllLF(description);
     List<Chapter> chapters = [];
 
-    var chapterListUrl = doc
-        .querySelector(".listing-chapters_wrap")
-        ?.querySelectorAll("a")
-        .last
-        .attributes["href"];
-
     resp = await MyDio().getHtml(RequestOptions(
-      path: chapterListUrl!,
+      baseUrl: chapterListBase,
+      path: id.split("/").last,
       method: "GET",
     ));
 
@@ -115,12 +89,10 @@ class Baozi extends Parser {
     doc = parse(content);
     // parse chapter
     doc
-        .querySelector(".main.version-chaps")
+        .querySelector("div.grid.grid-cols-1.gap-y-2.gap-x-2")
         ?.querySelectorAll("a")
         .forEach((e) {
-      var title = e.text;
-      updateDate = e.querySelector("span")?.text ?? "";
-      title = title.substring(0, title.length - updateDate.length - 1);
+      var title = e.querySelector(".text-sm.font-medium.truncate")?.text ?? "";
       title = trimAllLF(title);
       var url = e.attributes["href"] ?? "";
       chapters.add(Chapter(title, url, 0, []));
@@ -134,30 +106,34 @@ class Baozi extends Parser {
 
   @override
   Future<ComicPageData> comicByName(String name, int page) async {
-    var params = {
-      "s": name,
-    };
     var resp = await MyDio().getHtml(RequestOptions(
-      path: searchBase,
+      baseUrl: searchBase,
+      path: "/s/$name",
       method: "GET",
-      queryParameters: params,
     ));
     var content = resp.value?.data.toString() ?? "";
     var doc = parse(content);
-    // parse page
-    var pageCount = 1;
+
+    var respp = await MyDio().getHtml(RequestOptions(
+      path: "https://go.mgsearcher.com/indexes/mangaStrapiPro/search",
+      method: "POST",
+      data: {"q": name, "hitsPerPage": 30, "page": page},
+    ));
 
     List<ComicSimple> list = [];
     doc
-        .querySelector(".generate-columns-container")
-        ?.querySelectorAll("article")
+        .querySelector("div.grid.grid-cols-3.gap-unit-xs")
+        ?.querySelectorAll("div.pb-2")
         .forEach((e) {
-      var title = e.querySelector("h2")?.text ?? "";
+      var title = e.querySelector("h3")?.text ?? "";
       title = trimAllLF(title);
-
-      var thumb = e.querySelector("img")?.attributes["data-src"] ??
-          e.querySelector("img")?.attributes["src"] ??
+      var thumb = e.querySelector("img")?.attributes["src"] ??
+          e.querySelector("img")?.attributes["srcset"] ??
           "";
+      if (!thumb.startsWith("http")) {
+        thumb = domainBase + thumb;
+      }
+
       var id = e.querySelector("a")?.attributes["href"] ?? "";
 
       var updateDate = "";
@@ -168,7 +144,14 @@ class Baozi extends Parser {
       list.add(ComicSimple(
           id, title, thumb, author, updateDate, source, sourceName));
     });
-    return ComicPageData(pageCount, list);
+    var maxPage = doc
+            .querySelector(
+                "div.flex.justify-between.items-center.mt-5.mb-10>div")
+            ?.querySelectorAll("a")
+            .last
+            .text ??
+        "";
+    return ComicPageData(int.tryParse(maxPage) ?? 1, list);
   }
 
   Future<List<MapEntry<String, String>>> getComicTabs() async {
@@ -179,37 +162,36 @@ class Baozi extends Parser {
     var doc = parse(content);
     List<MapEntry<String, String>> res = [];
 
-    doc
-        .querySelector("#primary-menu.main-nav>ul")
-        ?.querySelectorAll("li")
-        .forEach((element) {
+    doc.querySelector("#dropdown")?.querySelectorAll("li").forEach((element) {
       var href = element.firstChild?.attributes["href"] ?? "";
       var text = trimAllLF(element.text);
       res.add(MapEntry(text, href));
     });
-    return res.sublist(1, res.length - 1);
+    return res;
   }
 
   Future<ComicPageData> comicByTab(String path, int page) async {
     var resp = await MyDio().getHtml(
       RequestOptions(
-          path: "${path}page/$page", baseUrl: domainBase, method: "GET"),
+          path: "$path/page/$page", baseUrl: domainBase, method: "GET"),
     );
     var content = resp.value?.data.toString() ?? "";
     var doc = parse(content);
     List<ComicSimple> list = [];
     doc
-        .querySelector("div.generate-columns-container")
-        ?.querySelectorAll("div.gb-inside-container")
+        .querySelector("div.grid.grid-cols-3.gap-unit-xs")
+        ?.querySelectorAll("div.pb-2")
         .forEach((e) {
-      var title = e.querySelector("h2")?.text ?? "";
+      var title = e.querySelector("h3")?.text ?? "";
       title = trimAllLF(title);
-      var thumb = e.querySelector("img")?.attributes["data-src"] ??
-          e.querySelector("img")?.attributes["src"] ??
+      var thumb = e.querySelector("img")?.attributes["src"] ??
+          e.querySelector("img")?.attributes["srcset"] ??
           "";
+      if (!thumb.startsWith("http")) {
+        thumb = domainBase + thumb;
+      }
+
       var id = e.querySelector("a")?.attributes["href"] ?? "";
-      var child = e.querySelector(".updateon")?.clone(true);
-      child?.querySelector(":nth-child(1)")?.remove();
 
       var updateDate = "";
       var source = "baozi";
@@ -219,19 +201,12 @@ class Baozi extends Parser {
           id, title, thumb, author, updateDate, source, sourceName));
     });
     var maxPage = doc
-            .querySelector("nav.ct-pagination>div")
+            .querySelector(
+                "div.flex.justify-between.items-center.mt-5.mb-10>div")
             ?.querySelectorAll("a")
             .last
             .text ??
         "";
-    var pageCount = "";
-    if (maxPage.isNotEmpty) {
-      for (int i = 0; i < maxPage.length; i++) {
-        if (maxPage[i].contains(RegExp(r'[0-9]'))) {
-          pageCount += maxPage[i];
-        }
-      }
-    }
-    return ComicPageData(int.tryParse(pageCount) ?? 1, list);
+    return ComicPageData(int.tryParse(maxPage) ?? 1, list);
   }
 }
