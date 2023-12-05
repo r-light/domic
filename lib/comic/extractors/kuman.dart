@@ -9,8 +9,8 @@ import 'package:html/parser.dart';
 
 class Kuman extends Parser {
   static Kuman? _instance;
-  String domainBase = "http://www.kumwu1.com/";
-  String searchBase = "http://www.kumwu1.com/search";
+  String domainBase = "http://www.kumwu2.com/";
+  String searchBase = "http://www.kumwu2.com/search";
 
   Kuman._internal() {
     _instance = this;
