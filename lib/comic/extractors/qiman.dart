@@ -9,8 +9,8 @@ import 'package:html/parser.dart';
 
 class Qiman extends Parser {
   static Qiman? _instance;
-  String domainBase = "http://www.qmanwu1.com/";
-  String searchBase = "http://www.qmanwu1.com/search.php";
+  String domainBase = "http://www.qmanwu2.com/";
+  String searchBase = "http://www.qmanwu2.com/search.php";
 
   Qiman._internal() {
     _instance = this;
