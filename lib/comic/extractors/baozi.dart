@@ -31,11 +31,8 @@ class Baozi extends Parser {
     var doc = parse(content);
     chapter.images = [];
     doc
-        .querySelector(".entry-content")
-        ?.firstChild
-        ?.firstChild
-        ?.children[3]
-        .querySelectorAll("img")
+        .querySelector("div.touch-manipulation")
+        ?.querySelectorAll("img")
         .forEach((e) {
       chapter.images.add(
           ImageInfo(e.attributes['data-src'] ?? e.attributes["src"] ?? ""));
@@ -89,15 +86,15 @@ class Baozi extends Parser {
     doc = parse(content);
     // parse chapter
     doc
-        .querySelector("div.grid.grid-cols-1.gap-y-2.gap-x-2")
-        ?.querySelectorAll("a")
+        .querySelector("#chapterlists")
+        ?.querySelectorAll("div.chapteritem")
         .forEach((e) {
-      var title = e.querySelector(".text-sm.font-medium.truncate")?.text ?? "";
+      var title = e.querySelector("span.chaptertitle")?.text ?? "";
       title = trimAllLF(title);
-      var url = e.attributes["href"] ?? "";
+      var url = e.querySelector("a")?.attributes["href"] ?? "";
       chapters.add(Chapter(title, url, 0, []));
     });
-
+    chapters = chapters.reversed.toList();
     var res = ComicInfo(id, title, thumb, updateDate, uploadDate, description,
         chapters, author);
     res.state = state;
@@ -122,7 +119,7 @@ class Baozi extends Parser {
 
     List<ComicSimple> list = [];
     doc
-        .querySelector("div.grid.grid-cols-3.gap-unit-xs")
+        .querySelector("div.grid-cols-3.cardlist")
         ?.querySelectorAll("div.pb-2")
         .forEach((e) {
       var title = e.querySelector("h3")?.text ?? "";
@@ -179,7 +176,7 @@ class Baozi extends Parser {
     var doc = parse(content);
     List<ComicSimple> list = [];
     doc
-        .querySelector("div.grid.grid-cols-3.gap-unit-xs")
+        .querySelector("div.grid-cols-3.cardlist")
         ?.querySelectorAll("div.pb-2")
         .forEach((e) {
       var title = e.querySelector("h3")?.text ?? "";
