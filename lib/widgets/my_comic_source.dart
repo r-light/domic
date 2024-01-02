@@ -19,7 +19,7 @@ class _MyComicSourceState extends State<MyComicSource> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
+    return PopScope(
         child: DefaultTabController(
             initialIndex: 0,
             length: tabs.length,
@@ -104,9 +104,8 @@ class _MyComicSourceState extends State<MyComicSource> {
                     .toList(),
               ),
             )),
-        onWillPop: () async {
+        onPopInvoked: (didPop)  {
           Provider.of<ComicSource>(context, listen: false).save();
-          return true;
         });
   }
 

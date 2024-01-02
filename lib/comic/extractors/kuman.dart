@@ -64,10 +64,10 @@ class Kuman extends Parser {
         args3 = match.group(1)!.split("|");
       }
 
-      var __c0rst96 = getImgUrl(args0, args1, args2, args3, {});
-      var __0ks5217 = int.parse(
+      var c0rst96 = getImgUrl(args0, args1, args2, args3, {});
+      var a0ks5217 = int.parse(
           doc.querySelector(".readerContainer")?.attributes["data-id"] ?? "0");
-      var __2vrvt32 = [
+      var a2vrvt32 = [
         "c21raHkyNTg=",
         "c21rZDk1ZnY=",
         "bWQ0OTY5NTI=",
@@ -78,18 +78,18 @@ class Kuman extends Parser {
         "OGtpaG50OQ==",
         "ZHNvMTV0bG8=",
         "NWtvNnBsaHk="
-      ][__0ks5217];
-      var __ve1rdc3 = utf8.decode(base64.decode(__2vrvt32));
-      var __ps2ra76 = utf8.decode(base64.decode(__c0rst96));
-      var __lecs58c = __ve1rdc3.length;
-      var __csv489v = "";
-      for (int i = 0; i < __ps2ra76.length; i++) {
-        var k = i % __lecs58c;
-        __csv489v += String.fromCharCode(
-            __ps2ra76[i].codeUnitAt(0) ^ __ve1rdc3[k].codeUnitAt(0));
+      ][a0ks5217];
+      var ve1rdc3 = utf8.decode(base64.decode(a2vrvt32));
+      var ps2ra76 = utf8.decode(base64.decode(c0rst96));
+      var lecs58c = ve1rdc3.length;
+      var csv489v = "";
+      for (int i = 0; i < ps2ra76.length; i++) {
+        var k = i % lecs58c;
+        csv489v += String.fromCharCode(
+            ps2ra76[i].codeUnitAt(0) ^ ve1rdc3[k].codeUnitAt(0));
       }
-      var __6ffo512 = utf8.decode(base64.decode(__csv489v));
-      var list = jsonDecode(__6ffo512);
+      var a6ffo512 = utf8.decode(base64.decode(csv489v));
+      var list = jsonDecode(a6ffo512);
       for (var element in list) {
         chapter.images.add(ImageInfo(element));
       }
@@ -205,7 +205,7 @@ class Kuman extends Parser {
       RequestOptions(
           baseUrl: domainBase, path: "/rank/1-1.html", method: "GET"),
     );
-    print(resp.key);
+
     var content = resp.value?.data.toString();
     var doc = parse(content);
     List<MapEntry<String, String>> res = [];

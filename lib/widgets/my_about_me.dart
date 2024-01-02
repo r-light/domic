@@ -10,9 +10,9 @@ class MyAboutMe extends StatelessWidget {
         appBar: AppBar(
           title: const Text("关于"),
         ),
-        body: SafeArea(
+        body: const SafeArea(
             child: Column(
-          children: const [
+          children: [
             // version
             MyVersionInfo(),
             Divider(),

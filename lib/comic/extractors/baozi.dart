@@ -114,11 +114,11 @@ class Baozi extends Parser {
     var content = resp.value?.data.toString() ?? "";
     var doc = parse(content);
 
-    var respp = await MyDio().getHtml(RequestOptions(
-      path: "https://go.mgsearcher.com/indexes/mangaStrapiPro/search",
-      method: "POST",
-      data: {"q": name, "hitsPerPage": 30, "page": page},
-    ));
+    // var respp = await MyDio().getHtml(RequestOptions(
+    //   path: "https://go.mgsearcher.com/indexes/mangaStrapiPro/search",
+    //   method: "POST",
+    //   data: {"q": name, "hitsPerPage": 30, "page": page},
+    // ));
 
     List<ComicSimple> list = [];
     doc

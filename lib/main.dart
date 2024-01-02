@@ -90,9 +90,10 @@ class MyApp extends StatelessWidget {
         Routes.myAboutMeRoute: (context) => const MyAboutMe(),
       },
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        backgroundColor: Colors.white,
+        useMaterial3: false,
         brightness: Brightness.light,
+        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blue)
+            .copyWith(background: Colors.white),
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,

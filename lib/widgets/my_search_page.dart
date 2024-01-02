@@ -68,8 +68,12 @@ class MyComicSearchPageState extends State<MyComicSearchPage> {
                     cursorColor: Colors.white,
                     scrollPadding: EdgeInsets.all(padding),
                     textAlignVertical: TextAlignVertical.bottom,
-                    toolbarOptions: const ToolbarOptions(
-                        copy: true, cut: true, paste: true, selectAll: true),
+                    contextMenuBuilder: (context, editableTextState) {
+                      return AdaptiveTextSelectionToolbar.buttonItems(
+                        anchors: editableTextState.contextMenuAnchors,
+                        buttonItems: editableTextState.contextMenuButtonItems,
+                      );
+                    },
                     autofocus: true,
                     textInputAction: TextInputAction.search,
                     controller: _textEditingController,

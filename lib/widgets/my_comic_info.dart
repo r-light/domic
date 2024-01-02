@@ -518,7 +518,7 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
         TabBar(
           indicatorColor: Theme.of(context).colorScheme.secondary,
           labelColor: Theme.of(context).colorScheme.secondary,
-          unselectedLabelColor: Theme.of(context).textTheme.bodyText1?.color,
+          unselectedLabelColor: Theme.of(context).textTheme.bodyLarge?.color,
           isScrollable: false,
           tabs: tabs.map<Widget>((name) => Tab(text: name)).toList(),
         ),
