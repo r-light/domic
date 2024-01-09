@@ -1,3 +1,12 @@
+<!--
+ * @Author: r-light 414271394@qq.com
+ * @Date: 2022-07-10 07:39:59
+ * @LastEditors: r-light 414271394@qq.com
+ * @LastEditTime: 2024-01-09 09:20:45
+ * @FilePath: /domic/README.md
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+-->
+
 # domic
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -18,13 +27,10 @@
 
 ## 支持图源
 
-- [x] 扑飞漫画(已挂)
-- [x] 古风漫画(已挂)
-- [x] 百年漫画(已挂)
-- [x] 奇妙漫画(已挂)
-- [x] 18comic
+- [x] 古风漫画
 - [x] 奇漫屋
-- [x] 漫画猫
+- [x] 酷漫屋
+- [x] 包子漫画
 
 ## 界面
 
