@@ -84,6 +84,7 @@ class Routes {
   static const String myComicSearchResultRoute = "MyComicSearchResult";
   static const String mySettingRoute = "MySettingsAction";
   static const String myComicInfoRoute = "MyComicInfo";
+  static const String myComicInfoWebviewRoute = "MyComicInfoWebview";
   static const String myComicReaderRoute = "MyComicReader";
   static const String myAboutMeRoute = "MyAboutMe";
   static const String myComicHomeRoute = "MyComicHome";
@@ -95,7 +96,7 @@ class Routes {
     // ConstantString.bainian: myComicTagRoute,
     // ConstantString.qiman: myComicTagRoute,
     // ConstantString.kuman: myComicTagRoute,
-    // ConstantString.baozi: myComicTagRoute,
+    ConstantString.baozi: myComicTagRoute,
     // ConstantString.jmtt: myComicTagRoute,
   };
 }

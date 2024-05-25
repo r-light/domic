@@ -1,15 +1,21 @@
+import 'dart:core';
+import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'package:domic/comic/extractors/dio.dart';
 import 'package:domic/comic/extractors/dto.dart';
 import 'package:domic/comic/extractors/parser_entity.dart';
 import 'package:domic/comic/extractors/utils.dart';
+import 'package:domic/common/logger.dart';
 import 'package:html/parser.dart';
+import 'package:html_unescape/html_unescape.dart';
 
-class Baozi extends Parser {
+class Baozi extends Parser implements ParserWebview {
   static Baozi? _instance;
-  String domainBase = "https://baozimh.org/";
-  String searchBase = "https://baozimh.org/";
-  String chapterListBase = "https://baozimh.org/chapterlist/";
+  String domainBase = "https://m.baozimh.one/";
+  String searchBase = "https://m.baozimh.one/";
+  String chapterListBase = "https://m.baozimh.one/chapterlist/";
+  var unescape = HtmlUnescape();
+  final Pattern unicodePattern = RegExp(r'\\u([0-9A-Fa-f]{4})');
 
   Baozi._internal() {
     _instance = this;
@@ -205,5 +211,105 @@ class Baozi extends Parser {
             .text ??
         "";
     return ComicPageData(int.tryParse(maxPage) ?? 1, list);
+  }
+
+  @override
+  comicByChapterWebview(ComicInfo comicInfo, Map<String, dynamic> map,
+      {int idx = 0}) {
+    String content = map["content"];
+    var html = content
+        .replaceAllMapped(unicodePattern, (Match unicodeMatch) {
+          final int hexCode = int.parse(unicodeMatch.group(1)!, radix: 16);
+          final unicode = String.fromCharCode(hexCode);
+          return unicode;
+        })
+        .replaceAll("\\n", "")
+        .replaceAll("\\", "");
+    var doc = parse(html);
+    var chapter = comicInfo.chapters[idx];
+    chapter.images = [];
+    doc.querySelector("#chapcontent")?.querySelectorAll("img").forEach((e) {
+      if (e.attributes["alt"] != null) {
+        chapter.images.add(
+            ImageInfo(e.attributes['data-src'] ?? e.attributes["src"] ?? ""));
+      }
+    });
+    chapter.len = chapter.images.length;
+  }
+
+  @override
+  Future<ComicInfo> comicByIdWebview(Map<String, dynamic> map) async {
+    String content = map["content"];
+    ComicSimple comicSimple = map["record"];
+    String id = map["url"];
+
+    var html = content
+        .replaceAllMapped(unicodePattern, (Match unicodeMatch) {
+          final int hexCode = int.parse(unicodeMatch.group(1)!, radix: 16);
+          final unicode = String.fromCharCode(hexCode);
+          return unicode;
+        })
+        .replaceAll("\\n", "")
+        .replaceAll("\\", "");
+    var doc = parse(html);
+
+    var thumb = comicSimple.thumb;
+    if (!thumb.startsWith("http")) {
+      thumb = domainBase + thumb;
+    }
+
+    var title = comicSimple.title;
+    title = trimAllLF(title);
+
+    var state = ComicState.unknown;
+
+    var author = comicSimple.author;
+
+    var updateDate = "";
+    var uploadDate = updateDate;
+
+    var description = "";
+    description = trimAllLF(description);
+    List<Chapter> chapters = [];
+    // parse chapter
+    doc
+        .querySelector("#allchapterlist")
+        ?.querySelectorAll("div.chapteritem")
+        .forEach((e) {
+      var title = e.querySelector("span.chaptertitle")?.text ?? "";
+      title = trimAllLF(title);
+      var url = e.querySelector("a")?.attributes["href"] ?? "";
+      chapters.add(Chapter(title, url, 0, []));
+    });
+    chapters = chapters.reversed.toList();
+    var res = ComicInfo(id, title, thumb, updateDate, uploadDate, description,
+        chapters, author);
+    res.state = state;
+    return res;
+  }
+
+  @override
+  Future<ComicPageData> comicByNameWebview(String name, int page) {
+    // TODO: implement comicByNameWebview
+    throw UnimplementedError();
+  }
+
+  @override
+  String parseChapterUrl(String id) {
+    if (domainBase.endsWith("/") && id.startsWith("/")) {
+      return domainBase + id.substring(1);
+    } else {
+      return domainBase + id;
+    }
+  }
+
+  @override
+  String parseComicInfoUrl(String id) {
+    return Baozi().chapterListBase + id.split("/").last;
+  }
+
+  @override
+  Map<String, String>? getHeader() {
+    return const {"Referer": "https://m.baozimh.one/"};
   }
 }

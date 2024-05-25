@@ -1,12 +1,15 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:domic/comic/api.dart';
+import 'package:domic/comic/extractors/baozi.dart';
 import 'package:domic/comic/extractors/dto.dart';
 import 'package:domic/comic/extractors/jmtt.dart';
 import 'package:domic/common/common.dart';
 import 'package:domic/common/global.dart';
 import 'package:domic/common/hive.dart';
+import 'package:domic/common/logger.dart';
 import 'package:domic/widgets/components/my_comic_card.dart';
 import 'package:domic/widgets/components/my_comic_comment18.dart';
 import 'package:domic/widgets/components/my_grid_gesture_detector.dart';
@@ -14,7 +17,9 @@ import 'package:domic/widgets/components/my_setting_action.dart';
 import 'package:domic/widgets/components/my_status.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class MyComicInfoPage extends StatefulWidget {
   const MyComicInfoPage({Key? key, required this.content}) : super(key: key);
@@ -40,6 +45,8 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
           : Colors.grey.shade800;
   late Future<ComicInfo> _comicInfo =
       loadComicInfo(dur: const Duration(hours: 1));
+  Future<ComicInfo>? _comicInfoWebview;
+
   Future? _comicRelated;
   ComicInfo? _comicInfoRes;
   late bool _reversed = Hive.box(ConstantString.comicBox)
@@ -48,6 +55,8 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
   late int? _index = Hive.box(ConstantString.comicBox)
       .get(Global.indexKey(widget.content["record"]));
   int? _length;
+
+  WebViewController? _controller;
 
   void saveIndex(ComicSimple record) {
     Hive.box(ConstantString.comicBox).put(Global.indexKey(record), _index);
@@ -73,9 +82,9 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
     ComicSimple record = widget.content["record"];
     String source = record.source;
     String id = record.id;
+    ComicInfo info;
     var lazyBoxName = ConstantString.sourceToLazyBox[source]!;
     var key = Global.comicInfoKey(source, id);
-    ComicInfo info;
     if (MyHive().isInHive(lazyBoxName, key, dur: dur)) {
       info = await MyHive().getInHive(lazyBoxName, key);
     } else {
@@ -123,6 +132,52 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
       ),
       ...alwaysInActions()
     ];
+    if (webviewMethod.containsKey(record.source)) {
+      String url = webviewMethod[record.source]!
+          .parseComicInfoUrl(widget.content["record"].id);
+      _controller ??= WebViewController()
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setNavigationDelegate(
+          NavigationDelegate(
+            onPageFinished: (String url) async {
+              await Future.delayed(const Duration(seconds: 3));
+              var html = (await _controller?.runJavaScriptReturningResult(
+                      "document.documentElement.outerHTML;"))
+                  .toString();
+              var comicInfoWebview = await webviewMethod[record.source]!
+                  .comicByIdWebview({
+                "record": widget.content["record"],
+                "content": html,
+                "url": url
+              });
+              if (record.source == ConstantString.baozi) {
+                var info = await _comicInfo;
+                if (comicInfoWebview.chapters.length > info.chapters.length) {
+                  info.chapters = comicInfoWebview.chapters;
+                } else {
+                  return;
+                }
+                String source = record.source;
+                String id = record.id;
+                var lazyBoxName = ConstantString.sourceToLazyBox[source]!;
+                var key = Global.comicInfoKey(source, id);
+                MyHive().putInHive(lazyBoxName, key, info);
+                Hive.box(ConstantString.comicBox).put(key, info);
+                var oldLength = getLength(record);
+                if (oldLength != null && info.chapters.length != oldLength) {
+                  if (!_reversed && _index != null) {
+                    _index = info.chapters.length - oldLength + _index!;
+                    saveIndex(record);
+                  }
+                }
+                saveLength(record, info.chapters.length);
+                setState(() {});
+              }
+            },
+          ),
+        )
+        ..loadRequest(Uri.parse(url));
+    }
     /* if (comic18Method.containsKey(record.source)) {
       actions.insert(
           0,
@@ -359,7 +414,9 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
 
   Widget comicChapterGrid(
       BuildContext context, AsyncSnapshot<ComicInfo> snapshot) {
-    if (snapshot.hasError || !snapshot.hasData) {
+    if (snapshot.hasError ||
+        !snapshot.hasData ||
+        snapshot.requireData.chapters.isEmpty) {
       return const MyWaiting();
     }
     _comicInfoRes = snapshot.requireData;
@@ -392,11 +449,11 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
             }).whenComplete(() => setState(() {}));
           },
           style: ButtonStyle(
-            minimumSize: MaterialStateProperty.all(Size.infinite),
-            maximumSize: MaterialStateProperty.all(Size.infinite),
+            minimumSize: WidgetStateProperty.all(Size.infinite),
+            maximumSize: WidgetStateProperty.all(Size.infinite),
             backgroundColor:
-                highlight ? MaterialStateProperty.all(Colors.blue) : null,
-            shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                highlight ? WidgetStateProperty.all(Colors.blue) : null,
+            shape: WidgetStateProperty.all(RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30.0))),
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
@@ -465,11 +522,11 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
             }).whenComplete(() => setState(() {}));
           },
           style: ButtonStyle(
-            minimumSize: MaterialStateProperty.all(Size.infinite),
-            maximumSize: MaterialStateProperty.all(Size.infinite),
+            minimumSize: WidgetStateProperty.all(Size.infinite),
+            maximumSize: WidgetStateProperty.all(Size.infinite),
             backgroundColor:
-                highlight ? MaterialStateProperty.all(Colors.blue) : null,
-            shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                highlight ? WidgetStateProperty.all(Colors.blue) : null,
+            shape: WidgetStateProperty.all(RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30.0))),
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
