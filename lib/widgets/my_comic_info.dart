@@ -1,15 +1,12 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:domic/comic/api.dart';
-import 'package:domic/comic/extractors/baozi.dart';
 import 'package:domic/comic/extractors/dto.dart';
 import 'package:domic/comic/extractors/jmtt.dart';
 import 'package:domic/common/common.dart';
 import 'package:domic/common/global.dart';
 import 'package:domic/common/hive.dart';
-import 'package:domic/common/logger.dart';
 import 'package:domic/widgets/components/my_comic_card.dart';
 import 'package:domic/widgets/components/my_comic_comment18.dart';
 import 'package:domic/widgets/components/my_grid_gesture_detector.dart';
@@ -17,7 +14,6 @@ import 'package:domic/widgets/components/my_setting_action.dart';
 import 'package:domic/widgets/components/my_status.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -45,7 +41,6 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
           : Colors.grey.shade800;
   late Future<ComicInfo> _comicInfo =
       loadComicInfo(dur: const Duration(hours: 1));
-  Future<ComicInfo>? _comicInfoWebview;
 
   Future? _comicRelated;
   ComicInfo? _comicInfoRes;
@@ -85,6 +80,11 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
     ComicInfo info;
     var lazyBoxName = ConstantString.sourceToLazyBox[source]!;
     var key = Global.comicInfoKey(source, id);
+    if (webviewMethod.containsKey(source)) {
+      var cachedInfo = Hive.box(ConstantString.comicBox)
+          .get(Global.comicInfoKey(record.source, record.id));
+      if (cachedInfo != null) return cachedInfo;
+    }
     if (MyHive().isInHive(lazyBoxName, key, dur: dur)) {
       info = await MyHive().getInHive(lazyBoxName, key);
     } else {
