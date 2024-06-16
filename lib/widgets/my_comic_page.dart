@@ -93,7 +93,7 @@ class MyComicLayoutState extends State<MyComicLayout>
   // final int crossAxisCount = 3;
   // final double titleFontSize = 12;
   // final double sourceFontSize = 12;
-
+  
   void checkVersionHelper() {
     checkVersion().then((shouldUpdate) {
       if (shouldUpdate) {
@@ -295,16 +295,12 @@ class MyComicLayoutState extends State<MyComicLayout>
       var lazyBoxName = ConstantString.sourceToLazyBox[source]!;
       var key = Global.comicInfoKey(source, id);
       before.add(Hive.box(ConstantString.comicBox).get(key));
-      if (webviewMethod.containsKey(source)) {
-        futures.add(Future.value(Hive.box(ConstantString.comicBox).get(key)));
-      } else {
-        var parser = comicMethod[source] ?? comic18Method[source]!;
-        futures.add(parser.comicById(id).then((comicInfo) {
-          MyHive().putInHive(lazyBoxName, key, comicInfo);
-          Hive.box(ConstantString.comicBox).put(key, comicInfo);
-          return comicInfo;
-        }));
-      }
+      var parser = comicMethod[source] ?? comic18Method[source]!;
+      futures.add(parser.comicById(id).then((comicInfo) {
+        MyHive().putInHive(lazyBoxName, key, comicInfo);
+        Hive.box(ConstantString.comicBox).put(key, comicInfo);
+        return comicInfo;
+      }));
     }
     return Future.wait(futures).then((comicInfos) {
       int i = 0;
@@ -336,10 +332,10 @@ class MyComicLayoutState extends State<MyComicLayout>
   @override
   bool get wantKeepAlive => true;
 
-  void _onLoading({Duration duration = const Duration(seconds: 20)}) {
+  void _onLoading() {
     EasyLoading.showInfo(
       '正在查询漫画更新',
-      duration: duration,
+      duration: const Duration(seconds: 20),
       dismissOnTap: false,
     );
   }

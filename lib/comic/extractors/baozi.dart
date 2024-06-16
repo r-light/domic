@@ -5,6 +5,7 @@ import 'package:domic/comic/extractors/dio.dart';
 import 'package:domic/comic/extractors/dto.dart';
 import 'package:domic/comic/extractors/parser_entity.dart';
 import 'package:domic/comic/extractors/utils.dart';
+import 'package:domic/common/logger.dart';
 import 'package:html/parser.dart';
 import 'package:html_unescape/html_unescape.dart';
 
@@ -272,7 +273,7 @@ class Baozi extends Parser implements ParserWebview {
     List<Chapter> chapters = [];
     // parse chapter
     doc
-        .querySelector("#sortchapters")
+        .querySelector("#allchapterlist")
         ?.querySelectorAll("div.chapteritem")
         .forEach((e) {
       var title = e.querySelector("span.chaptertitle")?.text ?? "";
@@ -280,7 +281,7 @@ class Baozi extends Parser implements ParserWebview {
       var url = e.querySelector("a")?.attributes["href"] ?? "";
       chapters.add(Chapter(title, url, 0, []));
     });
-    chapters = chapters.toList();
+    chapters = chapters.reversed.toList();
     var res = ComicInfo(id, title, thumb, updateDate, uploadDate, description,
         chapters, author);
     res.state = state;

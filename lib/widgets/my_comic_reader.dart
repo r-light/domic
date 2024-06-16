@@ -4,6 +4,7 @@ import 'package:domic/comic/api.dart';
 import 'package:domic/comic/extractors/dto.dart';
 import 'package:domic/common/global.dart';
 import 'package:domic/common/hive.dart';
+import 'package:domic/common/logger.dart';
 import 'package:domic/widgets/components/my_comic_image.dart';
 import 'package:flutter/material.dart' hide ImageInfo;
 import 'package:hive/hive.dart';
@@ -86,7 +87,7 @@ class _ScrollReaderState extends State<ScrollReader> {
   double _imageIdx = 0;
   bool _showFrame = false;
   late var downloadBox = Hive.lazyBox(ConstantString.comic18DownloadBox);
-  Map<String, WebViewController> _webviewControllerMap = {};
+  WebViewController? _webviewController;
 
   // this is used to persist episode index
   void _onScroll() {
@@ -180,16 +181,16 @@ class _ScrollReaderState extends State<ScrollReader> {
         webviewMethod.containsKey(source)) {
       var url = Uri.parse(webviewMethod[source]!
           .parseChapterUrl(comicInfo.chapters[nextEp].url));
-      _webviewControllerMap[url.toString()] = WebViewController()
+      _webviewController = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
         ..setNavigationDelegate(
           NavigationDelegate(
             onPageFinished: (String url) async {
-              await Future.delayed(const Duration(seconds: 2));
-              var html = (await _webviewControllerMap[url]
-                      ?.runJavaScriptReturningResult(
+              await Future.delayed(const Duration(seconds: 1));
+              var html =
+                  (await _webviewController?.runJavaScriptReturningResult(
                           "document.documentElement.outerHTML;"))
-                  .toString();
+                      .toString();
               await webviewMethod[source]!.comicByChapterWebview(
                   comicInfo, {"content": html},
                   idx: nextEp);
@@ -217,13 +218,12 @@ class _ScrollReaderState extends State<ScrollReader> {
                   if (nextEp >= comicInfo.chapters.length) {
                     _hasMore = false;
                   }
-                  _webviewControllerMap.remove(url);
                 });
               });
             },
           ),
         )
-        ..loadRequest(url, headers: webviewMethod[source]!.getHeader() ?? {});
+        ..loadRequest(url);
     } else {
       if (comic18Method.containsKey(source) &&
           downloadBox.containsKey(comicInfo.chapters[nextEp].url)) {

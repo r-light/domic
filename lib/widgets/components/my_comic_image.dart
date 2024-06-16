@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
@@ -7,6 +8,7 @@ import 'package:domic/comic/extractors/dio.dart';
 import 'package:domic/comic/extractors/dto.dart';
 import 'package:domic/common/common.dart';
 import 'package:domic/common/hive.dart';
+import 'package:domic/common/logger.dart';
 import 'package:domic/widgets/components/my_status.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/foundation.dart';
