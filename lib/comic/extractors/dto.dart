@@ -127,6 +127,8 @@ class ImageInfo {
   int? width;
   @HiveField(3)
   String? pid;
+  @HiveField(4)
+  Map<String, dynamic>? headers;
 
   ImageInfo(this.src);
 
@@ -135,6 +137,7 @@ class ImageInfo {
         "height": height,
         "width": width,
         "pid": pid,
+        "headers": headers
       };
 
   ImageInfo.fromJson(Map<String, dynamic> json) {
@@ -142,6 +145,7 @@ class ImageInfo {
     height = json["height"] ?? 0;
     width = json["width"] ?? 0;
     pid = json["pid"] ?? "";
+    headers = json["headers"] ?? {};
   }
 
   ImageInfo.from(ImageInfo image) {
@@ -149,6 +153,7 @@ class ImageInfo {
     height = image.height;
     width = image.width;
     pid = image.pid;
+    headers = image.headers;
   }
 }
 

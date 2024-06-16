@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:domic/comic/extractors/dio.dart';
 import 'package:domic/comic/extractors/dto.dart';
@@ -9,7 +11,9 @@ class Baozi extends Parser {
   static Baozi? _instance;
   String domainBase = "https://baozimh.org/";
   String searchBase = "https://baozimh.org/";
-  String chapterListBase = "https://baozimh.org/chapterlist/";
+  String chapterListBase = "https://api-get.mgsearcher.com/api/manga/get";
+  String chapterImageBase =
+      "https://api-get.mgsearcher.com/api/chapter/getinfo";
 
   Baozi._internal() {
     _instance = this;
@@ -29,14 +33,26 @@ class Baozi extends Parser {
 
     var content = resp.value?.data.toString() ?? "";
     var doc = parse(content);
+    var chapterContent = doc.querySelector("#chapterContent");
+    var dataMs = chapterContent?.attributes["data-ms"] ?? "";
+    var dataCs = chapterContent?.attributes["data-cs"] ?? "";
+
+    resp = await MyDio().getHtml(RequestOptions(
+        path: chapterImageBase,
+        method: "GET",
+        queryParameters: {"m": dataMs, "c": dataCs},
+        headers: {"Referer": "https://m.baozimh.one/"}));
+
     chapter.images = [];
-    doc
-        .querySelector("div.touch-manipulation")
-        ?.querySelectorAll("img")
-        .forEach((e) {
-      chapter.images.add(
-          ImageInfo(e.attributes['data-src'] ?? e.attributes["src"] ?? ""));
-    });
+    try {
+      var list = resp.value?.data["data"]["info"]["images"] as List;
+      for (var image in list) {
+        chapter.images.add(ImageInfo(image["url"])
+          ..headers = {"Referer": "https://m.baozimh.one/"});
+      }
+      // ignore: empty_catches
+    } catch (e) {}
+
     chapter.len = chapter.images.length;
   }
 
@@ -49,6 +65,32 @@ class Baozi extends Parser {
     ));
     var content = resp.value?.data.toString();
     var doc = parse(content);
+
+    // parse chapter
+    var mid = doc.querySelector("#firstchap")?.attributes["data-mid"] ?? "";
+    List<Chapter> chapters = [];
+    var chapterInfoResp = MyDio()
+        .getHtml(
+      RequestOptions(
+          path: chapterListBase,
+          method: "GET",
+          queryParameters: {"mid": mid, "mode": "all"},
+          headers: {"Referer": "https://m.baozimh.one/"}),
+    )
+        .then((r) {
+      var map = r.value?.data as Map;
+      var list = map["data"]["chapters"] as List;
+      for (var chapter in list) {
+        var title = "", url = "";
+        try {
+          title = trimAllLF(chapter["attributes"]["title"] ?? "");
+          url = "$id/${chapter["attributes"]["slug"]}";
+          // ignore: empty_catches
+        } catch (e) {}
+        chapters.add(Chapter(title, url, 0, []));
+        chapters = chapters.reversed.toList();
+      }
+    });
 
     var thumb = doc
             .querySelector("#MangaCard")
@@ -74,27 +116,8 @@ class Baozi extends Parser {
     var description =
         doc.querySelector("p.text-medium.line-clamp-4.my-unit-md")?.text ?? "";
     description = trimAllLF(description);
-    List<Chapter> chapters = [];
 
-    resp = await MyDio().getHtml(RequestOptions(
-      baseUrl: chapterListBase,
-      path: id.split("/").last,
-      method: "GET",
-    ));
-
-    content = resp.value?.data.toString();
-    doc = parse(content);
-    // parse chapter
-    doc
-        .querySelector("#chapterlists")
-        ?.querySelectorAll("div.chapteritem")
-        .forEach((e) {
-      var title = e.querySelector("span.chaptertitle")?.text ?? "";
-      title = trimAllLF(title);
-      var url = e.querySelector("a")?.attributes["href"] ?? "";
-      chapters.add(Chapter(title, url, 0, []));
-    });
-    chapters = chapters.reversed.toList();
+    await chapterInfoResp;
     var res = ComicInfo(id, title, thumb, updateDate, uploadDate, description,
         chapters, author);
     res.state = state;

@@ -392,11 +392,11 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
             }).whenComplete(() => setState(() {}));
           },
           style: ButtonStyle(
-            minimumSize: MaterialStateProperty.all(Size.infinite),
-            maximumSize: MaterialStateProperty.all(Size.infinite),
+            minimumSize: WidgetStateProperty.all(Size.infinite),
+            maximumSize: WidgetStateProperty.all(Size.infinite),
             backgroundColor:
-                highlight ? MaterialStateProperty.all(Colors.blue) : null,
-            shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                highlight ? WidgetStateProperty.all(Colors.blue) : null,
+            shape: WidgetStateProperty.all(RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30.0))),
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
@@ -465,11 +465,11 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
             }).whenComplete(() => setState(() {}));
           },
           style: ButtonStyle(
-            minimumSize: MaterialStateProperty.all(Size.infinite),
-            maximumSize: MaterialStateProperty.all(Size.infinite),
+            minimumSize: WidgetStateProperty.all(Size.infinite),
+            maximumSize: WidgetStateProperty.all(Size.infinite),
             backgroundColor:
-                highlight ? MaterialStateProperty.all(Colors.blue) : null,
-            shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                highlight ? WidgetStateProperty.all(Colors.blue) : null,
+            shape: WidgetStateProperty.all(RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30.0))),
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),

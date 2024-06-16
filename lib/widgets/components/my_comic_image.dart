@@ -102,6 +102,7 @@ Widget normalImageWidget(MapEntry<int, ImageInfo> entry, dynamic setter,
   var info = entry.value;
   return ExtendedImage.network(
     info.src,
+    headers: info.headers?.cast<String, String>(),
     height: height,
     width: width,
     loadStateChanged: (ExtendedImageState state) {

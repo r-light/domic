@@ -156,13 +156,14 @@ class ImageInfoAdapter extends TypeAdapter<ImageInfo> {
     )
       ..height = fields[1] as int?
       ..width = fields[2] as int?
-      ..pid = fields[3] as String?;
+      ..pid = fields[3] as String?
+      ..headers = (fields[4] as Map?)?.cast<String, dynamic>();
   }
 
   @override
   void write(BinaryWriter writer, ImageInfo obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.src)
       ..writeByte(1)
@@ -170,7 +171,9 @@ class ImageInfoAdapter extends TypeAdapter<ImageInfo> {
       ..writeByte(2)
       ..write(obj.width)
       ..writeByte(3)
-      ..write(obj.pid);
+      ..write(obj.pid)
+      ..writeByte(4)
+      ..write(obj.headers);
   }
 
   @override

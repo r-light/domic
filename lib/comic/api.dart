@@ -19,7 +19,7 @@ final Map<String, Parser> comicMethod = {
   // "qiman": Qiman(),
   // "maofly": MaoFly(),
   // "kuman": Kuman(),
-  // "baozi": Baozi(),
+  "baozi": Baozi(),
 };
 
 final Map<String, Parser> comic18Method = {
