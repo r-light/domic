@@ -4,12 +4,10 @@ import 'package:domic/comic/api.dart';
 import 'package:domic/comic/extractors/dto.dart';
 import 'package:domic/common/global.dart';
 import 'package:domic/common/hive.dart';
-import 'package:domic/common/logger.dart';
 import 'package:domic/widgets/components/my_comic_image.dart';
 import 'package:flutter/material.dart' hide ImageInfo;
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 // import 'package:image_pixels/image_pixels.dart';
 
@@ -87,7 +85,6 @@ class _ScrollReaderState extends State<ScrollReader> {
   double _imageIdx = 0;
   bool _showFrame = false;
   late var downloadBox = Hive.lazyBox(ConstantString.comic18DownloadBox);
-  WebViewController? _webviewController;
 
   // this is used to persist episode index
   void _onScroll() {
@@ -175,94 +172,44 @@ class _ScrollReaderState extends State<ScrollReader> {
     _isLoading = true;
     ComicInfo comicInfo = widget.content["comicInfo"];
     String source = widget.content["source"];
-    var lazyBoxName = ConstantString.sourceToLazyBox[source]!;
-    var key = Global.comicChapterKey(source, comicInfo.id, nextEp);
-    if (!MyHive().isInHive(lazyBoxName, key) &&
-        webviewMethod.containsKey(source)) {
-      var url = Uri.parse(webviewMethod[source]!
-          .parseChapterUrl(comicInfo.chapters[nextEp].url));
-      _webviewController = WebViewController()
-        ..setJavaScriptMode(JavaScriptMode.unrestricted)
-        ..setNavigationDelegate(
-          NavigationDelegate(
-            onPageFinished: (String url) async {
-              await Future.delayed(const Duration(seconds: 1));
-              var html =
-                  (await _webviewController?.runJavaScriptReturningResult(
-                          "document.documentElement.outerHTML;"))
-                      .toString();
-              await webviewMethod[source]!.comicByChapterWebview(
-                  comicInfo, {"content": html},
-                  idx: nextEp);
-              MyHive().putInHive(lazyBoxName, key, comicInfo.chapters[nextEp]);
-              Future.delayed(Duration.zero, () {
-                setState(() {
-                  sum.add(0);
-                  for (var imageInfo in comicInfo.chapters[nextEp].images) {
-                    imageInfos.add(MapEntry(
-                        nextEp - (widget.content["index"] as int), imageInfo));
-                    aidScrambleId.add(MapEntry(
-                        comicInfo.chapters[nextEp].aid ?? 0,
-                        comicInfo.chapters[nextEp].scrambleId ?? 0));
-                    if (widget.content["source"] == ConstantString.jmtt) {
-                      sum[sum.length - 1] += axis == Axis.vertical
-                          ? maxStatusHeightInJmtt
-                          : maxWidth;
-                    } else {
-                      sum[sum.length - 1] +=
-                          axis == Axis.vertical ? maxStatusHeight : maxWidth;
-                    }
-                  }
-                  _isLoading = false;
-                  nextEp++;
-                  if (nextEp >= comicInfo.chapters.length) {
-                    _hasMore = false;
-                  }
-                });
-              });
-            },
-          ),
-        )
-        ..loadRequest(url);
+    if (comic18Method.containsKey(source) &&
+        downloadBox.containsKey(comicInfo.chapters[nextEp].url)) {
+      comicInfo.chapters[nextEp] =
+          await downloadBox.get(comicInfo.chapters[nextEp].url);
     } else {
-      if (comic18Method.containsKey(source) &&
-          downloadBox.containsKey(comicInfo.chapters[nextEp].url)) {
-        comicInfo.chapters[nextEp] =
-            await downloadBox.get(comicInfo.chapters[nextEp].url);
+      var lazyBoxName = ConstantString.sourceToLazyBox[source]!;
+      var key = Global.comicChapterKey(source, comicInfo.id, nextEp);
+      if (MyHive().isInHive(lazyBoxName, key)) {
+        comicInfo.chapters[nextEp] = await MyHive().getInHive(lazyBoxName, key);
       } else {
-        if (MyHive().isInHive(lazyBoxName, key)) {
-          comicInfo.chapters[nextEp] =
-              await MyHive().getInHive(lazyBoxName, key);
-        } else {
-          var parser = comicMethod[source] ?? comic18Method[source]!;
-          await parser.comicByChapter(comicInfo, idx: nextEp);
-          MyHive().putInHive(lazyBoxName, key, comicInfo.chapters[nextEp]);
-        }
+        var parser = comicMethod[source] ?? comic18Method[source]!;
+        await parser.comicByChapter(comicInfo, idx: nextEp);
+        MyHive().putInHive(lazyBoxName, key, comicInfo.chapters[nextEp]);
       }
-      Future.delayed(Duration.zero, () {
-        setState(() {
-          sum.add(0);
-          for (var imageInfo in comicInfo.chapters[nextEp].images) {
-            imageInfos.add(
-                MapEntry(nextEp - (widget.content["index"] as int), imageInfo));
-            aidScrambleId.add(MapEntry(comicInfo.chapters[nextEp].aid ?? 0,
-                comicInfo.chapters[nextEp].scrambleId ?? 0));
-            if (widget.content["source"] == ConstantString.jmtt) {
-              sum[sum.length - 1] +=
-                  axis == Axis.vertical ? maxStatusHeightInJmtt : maxWidth;
-            } else {
-              sum[sum.length - 1] +=
-                  axis == Axis.vertical ? maxStatusHeight : maxWidth;
-            }
-          }
-          _isLoading = false;
-          nextEp++;
-          if (nextEp >= comicInfo.chapters.length) {
-            _hasMore = false;
-          }
-        });
-      });
     }
+    Future.delayed(Duration.zero, () {
+      setState(() {
+        sum.add(0);
+        for (var imageInfo in comicInfo.chapters[nextEp].images) {
+          imageInfos.add(
+              MapEntry(nextEp - (widget.content["index"] as int), imageInfo));
+          aidScrambleId.add(MapEntry(comicInfo.chapters[nextEp].aid ?? 0,
+              comicInfo.chapters[nextEp].scrambleId ?? 0));
+          if (widget.content["source"] == ConstantString.jmtt) {
+            sum[sum.length - 1] +=
+                axis == Axis.vertical ? maxStatusHeightInJmtt : maxWidth;
+          } else {
+            sum[sum.length - 1] +=
+                axis == Axis.vertical ? maxStatusHeight : maxWidth;
+          }
+        }
+        _isLoading = false;
+        nextEp++;
+        if (nextEp >= comicInfo.chapters.length) {
+          _hasMore = false;
+        }
+      });
+    });
   }
 
   @override
@@ -324,17 +271,13 @@ class _ScrollReaderState extends State<ScrollReader> {
                       imageInfos[index].value.height, maxStatusHeightInJmtt),
             );
           } else {
-            var header = webviewMethod.containsKey(widget.content["source"])
-                ? webviewMethod[widget.content["source"]]!.getHeader()
-                : null;
             return normalImageWidget(imageInfos[index], setter,
                 width: maxWidth,
                 statusWidth: maxWidth,
                 statusHeight: axis == Axis.horizontal
                     ? maxHeight
                     : getRealHeight(maxWidth, imageInfos[index].value.width,
-                        imageInfos[index].value.height, maxStatusHeight),
-                header: header);
+                        imageInfos[index].value.height, maxStatusHeight));
           }
         },
         itemCount: _hasMore ? imageInfos.length + 1 : imageInfos.length,
@@ -433,85 +376,42 @@ class _AlbumReaderState extends State<AlbumReader> {
   bool _showFrame = false;
   double _imageIdx = 0;
   late var downloadBox = Hive.lazyBox(ConstantString.comic18DownloadBox);
-  WebViewController? _webviewController;
 
   void loadNextEpisode() async {
     _isLoading = true;
     ComicInfo comicInfo = widget.content["comicInfo"];
     String source = widget.content["source"];
-    var lazyBoxName = ConstantString.sourceToLazyBox[source]!;
-    var key = Global.comicChapterKey(source, comicInfo.id, nextEp);
-    if (!MyHive().isInHive(lazyBoxName, key) &&
-        webviewMethod.containsKey(source)) {
-      var url = Uri.parse(webviewMethod[source]!
-          .parseChapterUrl(comicInfo.chapters[nextEp].url));
-      _webviewController ??= WebViewController()
-        ..setJavaScriptMode(JavaScriptMode.unrestricted)
-        ..setNavigationDelegate(
-          NavigationDelegate(
-            onPageFinished: (String url) async {
-              await Future.delayed(const Duration(seconds: 1));
-              var html =
-                  (await _webviewController?.runJavaScriptReturningResult(
-                          "document.documentElement.outerHTML;"))
-                      .toString();
-              await webviewMethod[source]!.comicByChapterWebview(
-                  comicInfo, {"content": html},
-                  idx: nextEp);
-              MyHive().putInHive(lazyBoxName, key, comicInfo.chapters[nextEp]);
-              Future.delayed(Duration.zero, () {
-                setState(() {
-                  for (var imageInfo in comicInfo.chapters[nextEp].images) {
-                    imageInfos.add(MapEntry(
-                        nextEp - (widget.content["index"] as int), imageInfo));
-                    aidScrambleId.add(MapEntry(
-                        comicInfo.chapters[nextEp].aid ?? 0,
-                        comicInfo.chapters[nextEp].scrambleId ?? 0));
-                  }
-                  numPerEp.add(comicInfo.chapters[nextEp].images.length);
-                  _isLoading = false;
-                  nextEp++;
-                  if (nextEp >= comicInfo.chapters.length) {
-                    _hasMore = false;
-                  }
-                });
-              });
-            },
-          ),
-        )
-        ..loadRequest(url);
+    if (comic18Method.containsKey(source) &&
+        downloadBox.containsKey(comicInfo.chapters[nextEp].url)) {
+      comicInfo.chapters[nextEp] =
+          await downloadBox.get(comicInfo.chapters[nextEp].url);
     } else {
-      if (comic18Method.containsKey(source) &&
-          downloadBox.containsKey(comicInfo.chapters[nextEp].url)) {
-        comicInfo.chapters[nextEp] =
-            await downloadBox.get(comicInfo.chapters[nextEp].url);
+      var lazyBoxName = ConstantString.sourceToLazyBox[source]!;
+      var key = Global.comicChapterKey(source, comicInfo.id, nextEp);
+      if (MyHive().isInHive(lazyBoxName, key)) {
+        comicInfo.chapters[nextEp] = await MyHive().getInHive(lazyBoxName, key);
       } else {
-        if (MyHive().isInHive(lazyBoxName, key)) {
-          comicInfo.chapters[nextEp] =
-              await MyHive().getInHive(lazyBoxName, key);
-        } else {
-          var parser = comicMethod[source] ?? comic18Method[source]!;
-          await parser.comicByChapter(comicInfo, idx: nextEp);
-          MyHive().putInHive(lazyBoxName, key, comicInfo.chapters[nextEp]);
-        }
+        var parser = comicMethod[source] ?? comic18Method[source]!;
+        await parser.comicByChapter(comicInfo, idx: nextEp);
+        MyHive().putInHive(lazyBoxName, key, comicInfo.chapters[nextEp]);
       }
-      Future.delayed(Duration.zero, () {
-        setState(() {
-          for (var imageInfo in comicInfo.chapters[nextEp].images) {
-            imageInfos.add(
-                MapEntry(nextEp - (widget.content["index"] as int), imageInfo));
-            aidScrambleId.add(MapEntry(comicInfo.chapters[nextEp].aid ?? 0,
-                comicInfo.chapters[nextEp].scrambleId ?? 0));
-          }
-          numPerEp.add(comicInfo.chapters[nextEp].images.length);
-          _isLoading = false;
-          nextEp++;
-          if (nextEp >= comicInfo.chapters.length) {
-            _hasMore = false;
-          }
-        });
-      });
     }
+    Future.delayed(Duration.zero, () {
+      setState(() {
+        for (var imageInfo in comicInfo.chapters[nextEp].images) {
+          imageInfos.add(
+              MapEntry(nextEp - (widget.content["index"] as int), imageInfo));
+          aidScrambleId.add(MapEntry(comicInfo.chapters[nextEp].aid ?? 0,
+              comicInfo.chapters[nextEp].scrambleId ?? 0));
+        }
+        numPerEp.add(comicInfo.chapters[nextEp].images.length);
+        _isLoading = false;
+        nextEp++;
+        if (nextEp >= comicInfo.chapters.length) {
+          _hasMore = false;
+        }
+      });
+    });
   }
 
   void _onScroll() {
@@ -605,14 +505,10 @@ class _AlbumReaderState extends State<AlbumReader> {
                 statusHeight: maxHeight,
               );
             } else {
-              var header = webviewMethod.containsKey(widget.content["source"])
-                  ? webviewMethod[widget.content["source"]]!.getHeader()
-                  : null;
               return normalImageWidget(imageInfos[index], setter,
                   width: maxWidth,
                   statusWidth: maxWidth,
-                  statusHeight: maxHeight,
-                  header: header);
+                  statusHeight: maxHeight);
             }
           },
           itemCount: _hasMore ? imageInfos.length + 1 : imageInfos.length,

@@ -78,9 +78,7 @@ class MyApp extends StatelessWidget {
           Routes.myComicTagRoute: (ctx) =>
               MyComicTag(content: settings.arguments),
           Routes.myDownloadRoute: (ctx) =>
-              MyDownloadPage(content: settings.arguments),
-          Routes.myComicInfoWebviewRoute: (ctx) =>
-              MyDownloadPage(content: settings.arguments),
+              MyDownloadPage(content: settings.arguments)
         };
         WidgetBuilder builder = routes[settings.name]!;
         return MaterialPageRoute(builder: (ctx) => builder(ctx));
@@ -95,7 +93,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: false,
         brightness: Brightness.light,
         colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blue)
-            .copyWith(surface: Colors.white),
+            .copyWith(background: Colors.white),
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,

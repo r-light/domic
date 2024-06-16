@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 // todo json_serializable
 
 import 'package:hive_flutter/adapters.dart';
@@ -204,11 +203,6 @@ class Chapter {
     aid = chapter.aid;
     images = chapter.images.map(ImageInfo.from).toList();
   }
-
-  @override
-  String toString() {
-    return 'Chapter(title: $title, url: $url, len: $len, images: $images, uploadDate: $uploadDate, scrambleId: $scrambleId, aid: $aid)';
-  }
 }
 
 @HiveType(typeId: 7)
@@ -247,7 +241,6 @@ class ComicInfo {
   @HiveField(15)
   List<String>? tagsUrl;
 
-  ComicInfo.empty();
   ComicInfo(this.id, this.title, this.thumb, this.updateDate, this.uploadDate,
       this.description, this.chapters, this.author);
 
@@ -290,11 +283,6 @@ class ComicInfo {
         .cast<Chapter>();
     author = json["author"] ?? "";
     tagsUrl = (json["tags_url"] ?? []).cast<String>();
-  }
-
-  @override
-  String toString() {
-    return 'ComicInfo(id: $id, title: $title, thumb: $thumb, uploadDate: $uploadDate, updateDate: $updateDate, description: $description, chapters: $chapters, author: $author, works: $works, characters: $characters, authors: $authors, tags: $tags, star: $star, views: $views, state: $state, tagsUrl: $tagsUrl)';
   }
 }
 
