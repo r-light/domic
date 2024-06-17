@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import 'package:domic/comic/extractors/dio.dart';
 import 'package:domic/comic/extractors/dto.dart';
@@ -88,8 +86,8 @@ class Baozi extends Parser {
           // ignore: empty_catches
         } catch (e) {}
         chapters.add(Chapter(title, url, 0, []));
-        chapters = chapters.reversed.toList();
       }
+      chapters = chapters.reversed.toList();
     });
 
     var thumb = doc
