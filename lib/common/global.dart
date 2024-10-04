@@ -426,7 +426,7 @@ class ComicSource with ChangeNotifier {
     box = Hive.box(ConstantString.comicBox);
     sourceMap = Map<String, bool>.from(box.get(sourceMapKey) ?? {});
     source18Map = Map<String, bool>.from(box.get(sourceMap18Key) ?? {});
-    if (sourceMap.length != comicMethod.length) {
+    if (sourceMap.keys.toSet() != comicMethod.keys.toSet()) {
       var commonKeys =
           sourceMap.keys.toSet().intersection(comicMethod.keys.toSet());
       var remainKeys = comicMethod.keys.toSet()..removeAll(commonKeys);
@@ -446,7 +446,7 @@ class ComicSource with ChangeNotifier {
       }
       box.put(sourceMap18Key, source18Map);
     }
-    if (source18Map.length != comic18Method.length) {
+    if (source18Map.keys.toSet() != comic18Method.keys.toSet()) {
       Map<String, bool> map = {};
       for (var source in comic18Method.keys) {
         if (source18Map.containsKey(source)) {
