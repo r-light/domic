@@ -20,93 +20,93 @@ class _MyComicSourceState extends State<MyComicSource> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-        child: DefaultTabController(
-            initialIndex: 0,
-            length: tabs.length,
-            child: Scaffold(
-              appBar: AppBar(
-                title: const Text(
-                  "图源",
-                ),
-                centerTitle: false,
-                actions: [
-                  // select all sources
-                  IconButton(
-                    onPressed: () => tabs[_currentIndex] == "常规"
-                        ? Provider.of<ComicSource>(context, listen: false)
-                            .sourceMap
-                            .keys
-                            .forEach((source) {
-                            Provider.of<ComicSource>(context, listen: false)
-                                .reverseSourceOrDefault(source, active: true);
-                          })
-                        : Provider.of<ComicSource>(context, listen: false)
-                            .source18Map
-                            .keys
-                            .forEach((source) {
-                            Provider.of<ComicSource>(context, listen: false)
-                                .reverseSource18OrDefault(source, active: true);
-                          }),
-                    icon: const Icon(
-                      Icons.done_all,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => tabs[_currentIndex] == "常规"
-                        ? Provider.of<ComicSource>(context, listen: false)
-                            .sourceMap
-                            .keys
-                            .forEach((source) {
-                            Provider.of<ComicSource>(context, listen: false)
-                                .reverseSourceOrDefault(source, active: false);
-                          })
-                        : Provider.of<ComicSource>(context, listen: false)
-                            .source18Map
-                            .keys
-                            .forEach((source) {
-                            Provider.of<ComicSource>(context, listen: false)
-                                .reverseSource18OrDefault(source,
-                                    active: false);
-                          }),
-                    icon: const Icon(
-                      Icons.remove_done,
-                    ),
-                  ),
-                  // save sources
-                  IconButton(
-                    onPressed: () =>
-                        Provider.of<ComicSource>(context, listen: false).save(),
-                    icon: const Icon(
-                      Icons.save,
-                    ),
-                  ),
-                  // test all sources
-                  IconButton(
-                      onPressed: () => checkSource(context),
-                      icon: const Icon(Icons.checklist)),
-                ],
-                bottom: TabBar(
-                  isScrollable: false,
-                  tabs: tabs.map<Widget>((e) => Tab(text: e)).toList(),
-                ),
+      child: DefaultTabController(
+          initialIndex: 0,
+          length: tabs.length,
+          child: Scaffold(
+            appBar: AppBar(
+              title: const Text(
+                "图源",
               ),
-              body: TabBarView(
-                children: tabs
-                    .asMap()
-                    .map((k, v) => MapEntry(
-                        k,
-                        MySourceLayout(
-                          name: v,
-                          setter: setCurrentIndex,
-                          tabIndex: k,
-                        )))
-                    .values
-                    .toList(),
+              centerTitle: false,
+              actions: [
+                // select all sources
+                IconButton(
+                  onPressed: () => tabs[_currentIndex] == "常规"
+                      ? Provider.of<ComicSource>(context, listen: false)
+                          .sourceMap
+                          .keys
+                          .forEach((source) {
+                          Provider.of<ComicSource>(context, listen: false)
+                              .reverseSourceOrDefault(source, active: true);
+                        })
+                      : Provider.of<ComicSource>(context, listen: false)
+                          .source18Map
+                          .keys
+                          .forEach((source) {
+                          Provider.of<ComicSource>(context, listen: false)
+                              .reverseSource18OrDefault(source, active: true);
+                        }),
+                  icon: const Icon(
+                    Icons.done_all,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => tabs[_currentIndex] == "常规"
+                      ? Provider.of<ComicSource>(context, listen: false)
+                          .sourceMap
+                          .keys
+                          .forEach((source) {
+                          Provider.of<ComicSource>(context, listen: false)
+                              .reverseSourceOrDefault(source, active: false);
+                        })
+                      : Provider.of<ComicSource>(context, listen: false)
+                          .source18Map
+                          .keys
+                          .forEach((source) {
+                          Provider.of<ComicSource>(context, listen: false)
+                              .reverseSource18OrDefault(source, active: false);
+                        }),
+                  icon: const Icon(
+                    Icons.remove_done,
+                  ),
+                ),
+                // save sources
+                IconButton(
+                  onPressed: () =>
+                      Provider.of<ComicSource>(context, listen: false).save(),
+                  icon: const Icon(
+                    Icons.save,
+                  ),
+                ),
+                // test all sources
+                IconButton(
+                    onPressed: () => checkSource(context),
+                    icon: const Icon(Icons.checklist)),
+              ],
+              bottom: TabBar(
+                isScrollable: false,
+                tabs: tabs.map<Widget>((e) => Tab(text: e)).toList(),
               ),
-            )),
-        onPopInvoked: (didPop)  {
-          Provider.of<ComicSource>(context, listen: false).save();
-        });
+            ),
+            body: TabBarView(
+              children: tabs
+                  .asMap()
+                  .map((k, v) => MapEntry(
+                      k,
+                      MySourceLayout(
+                        name: v,
+                        setter: setCurrentIndex,
+                        tabIndex: k,
+                      )))
+                  .values
+                  .toList(),
+            ),
+          )),
+      onPopInvokedWithResult: (didPop, result) {
+        Provider.of<ComicSource>(context, listen: false).save();
+      },
+    );
   }
 
   void setCurrentIndex(int idx) {

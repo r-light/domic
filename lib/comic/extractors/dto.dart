@@ -13,7 +13,8 @@ const sourcesName = {
   "qiman": "奇漫屋",
   "maofly": "漫画猫",
   "kuman": "酷漫屋",
-  "baozi": "包子漫画"
+  "baozi": "包子漫画",
+  "wnacg": "绅士漫画"
 };
 
 @HiveType(typeId: 1)

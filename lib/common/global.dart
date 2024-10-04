@@ -446,6 +446,18 @@ class ComicSource with ChangeNotifier {
       }
       box.put(sourceMap18Key, source18Map);
     }
+    if (source18Map.length != comic18Method.length) {
+      Map<String, bool> map = {};
+      for (var source in comic18Method.keys) {
+        if (source18Map.containsKey(source)) {
+          map[source] = source18Map[source]!;
+        } else {
+          map[source] = true;
+        }
+      }
+      source18Map = map;
+      box.put(sourceMap18Key, source18Map);
+    }
   }
 
   void reverseSourceOrDefault(String source, {bool? active}) {

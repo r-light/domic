@@ -23,6 +23,7 @@ class ConstantString {
   static const maofly = "maofly";
   static const kuman = "kuman";
   static const baozi = "baozi";
+  static const wnacg = "wnacg";
 
   static const pufeiCacheBox = "pufeiCacheLazy";
   static const jmttCacheBox = "jmttCacheLazy";
@@ -33,6 +34,7 @@ class ConstantString {
   static const maoflyCacheBox = "maoflyCacheLazy";
   static const kumanCacheBox = "kumanCacheLazy";
   static const baoziCacheBox = "baoziCacheLazy";
+  static const wnacgCacheBox = "wnacgCacheLazy";
 
   static const comic18DownloadBox = "comic18DownloadLazy";
 
@@ -53,6 +55,7 @@ class ConstantString {
     maoflyCacheBox,
     kumanCacheBox,
     baoziCacheBox,
+    wnacgCacheBox
   ];
 
   static const sourceToLazyBox = {
@@ -65,6 +68,7 @@ class ConstantString {
     maofly: maoflyCacheBox,
     kuman: kumanCacheBox,
     baozi: baoziCacheBox,
+    wnacg: wnacgCacheBox
   };
 
   static const readerDirectionName = ["从上到下", "从左到右", "从右到左"];

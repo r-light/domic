@@ -483,7 +483,7 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
           )));
     }
 
-    var chaptersWidget = Scaffold(
+    return Scaffold(
       body: CustomScrollView(slivers: [
         SliverList(
           delegate: SliverChildListDelegate(
@@ -511,28 +511,28 @@ class _MyComicInfoPageState extends State<MyComicInfoPage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
     );
 
-    return DefaultTabController(
-      length: tabs.length,
-      initialIndex: 0,
-      child: Column(children: [
-        TabBar(
-          indicatorColor: Theme.of(context).colorScheme.secondary,
-          labelColor: Theme.of(context).colorScheme.secondary,
-          unselectedLabelColor: Theme.of(context).textTheme.bodyLarge?.color,
-          isScrollable: false,
-          tabs: tabs.map<Widget>((name) => Tab(text: name)).toList(),
-        ),
-        Expanded(
-          child: TabBarView(
-            children: [
-              chaptersWidget,
-              commmentsWidget(record.id),
-              relatedWidget(record.id)
-            ],
-          ),
-        ),
-      ]),
-    );
+    // return DefaultTabController(
+    //   length: tabs.length,
+    //   initialIndex: 0,
+    //   child: Column(children: [
+    //     TabBar(
+    //       indicatorColor: Theme.of(context).colorScheme.secondary,
+    //       labelColor: Theme.of(context).colorScheme.secondary,
+    //       unselectedLabelColor: Theme.of(context).textTheme.bodyLarge?.color,
+    //       isScrollable: false,
+    //       tabs: tabs.map<Widget>((name) => Tab(text: name)).toList(),
+    //     ),
+    //     Expanded(
+    //       child: TabBarView(
+    //         children: [
+    //           chaptersWidget,
+    //           commmentsWidget(record.id),
+    //           relatedWidget(record.id)
+    //         ],
+    //       ),
+    //     ),
+    //   ]),
+    // );
   }
 
   Widget relatedWidget(String id) {
