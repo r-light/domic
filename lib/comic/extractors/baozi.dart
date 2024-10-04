@@ -28,7 +28,6 @@ class Baozi extends Parser {
       baseUrl: domainBase,
       method: "GET",
     ));
-
     var content = resp.value?.data.toString() ?? "";
     var doc = parse(content);
     var chapterContent = doc.querySelector("#chapterContent");
@@ -40,13 +39,20 @@ class Baozi extends Parser {
         method: "GET",
         queryParameters: {"m": dataMs, "c": dataCs},
         headers: {"Referer": "https://m.baozimh.one/"}));
-
     chapter.images = [];
     try {
-      var list = resp.value?.data["data"]["info"]["images"] as List;
+      var list = resp.value?.data["data"]["info"]["images"]["images"] as List;
+      list.sort((o1, o2) => o1["order"] - o2["order"]);
+      String prefix = resp.value?.data["data"]["info"]["images"]["line"] == 2
+          ? "https://f40-1-4.g-mh.online"
+          : "https://t40-1-4.g-mh.online";
       for (var image in list) {
-        chapter.images.add(ImageInfo(image["url"])
-          ..headers = {"Referer": "https://m.baozimh.one/"});
+        var url = image["url"] as String;
+        if (!url.startsWith("http")) {
+          url = prefix + url;
+        }
+        chapter.images.add(
+            ImageInfo(url)..headers = {"Referer": "https://m.baozimh.one/"});
       }
       // ignore: empty_catches
     } catch (e) {}

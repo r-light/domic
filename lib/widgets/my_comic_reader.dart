@@ -184,7 +184,9 @@ class _ScrollReaderState extends State<ScrollReader> {
       } else {
         var parser = comicMethod[source] ?? comic18Method[source]!;
         await parser.comicByChapter(comicInfo, idx: nextEp);
-        MyHive().putInHive(lazyBoxName, key, comicInfo.chapters[nextEp]);
+        if (comicInfo.chapters[nextEp].images.isNotEmpty) {
+          MyHive().putInHive(lazyBoxName, key, comicInfo.chapters[nextEp]);
+        }
       }
     }
     Future.delayed(Duration.zero, () {
@@ -393,7 +395,9 @@ class _AlbumReaderState extends State<AlbumReader> {
       } else {
         var parser = comicMethod[source] ?? comic18Method[source]!;
         await parser.comicByChapter(comicInfo, idx: nextEp);
-        MyHive().putInHive(lazyBoxName, key, comicInfo.chapters[nextEp]);
+        if (comicInfo.chapters[nextEp].images.isNotEmpty) {
+          MyHive().putInHive(lazyBoxName, key, comicInfo.chapters[nextEp]);
+        }
       }
     }
     Future.delayed(Duration.zero, () {
