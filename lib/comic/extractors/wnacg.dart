@@ -51,9 +51,10 @@ class Wnacg extends Parser {
     var doc = parse(content);
 
     // parse chapter
-    var maxLenText =
-        doc.querySelectorAll(".bot_toolbar>.paginator>a").last.text;
-    "1";
+    var maxLenText = "1";
+    try {
+      doc.querySelectorAll(".bot_toolbar>.paginator>a").last.text;
+    } catch (e) {}
     var maxLen = int.tryParse(maxLenText) ?? 1;
     List<Chapter> chapters = [];
     for (int i = 1; i <= maxLen; i++) {
@@ -207,9 +208,11 @@ class Wnacg extends Parser {
     });
 
     // parse page
-    var maxLenText =
-        doc.querySelectorAll(".bot_toolbar>.paginator>a").last.text;
-    "1";
+    var maxLenText = "1";
+    try {
+      maxLenText = doc.querySelectorAll(".bot_toolbar>.paginator>a").last.text;
+    } catch (e) {}
+
     var maxPage = int.tryParse(maxLenText) ?? 1;
     return ComicPageData(maxPage, list);
   }
