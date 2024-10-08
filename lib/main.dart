@@ -93,7 +93,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: false,
         brightness: Brightness.light,
         colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blue)
-            .copyWith(background: Colors.white),
+            .copyWith(surface: Colors.white),
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,

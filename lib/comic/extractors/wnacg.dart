@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:dio/dio.dart';
 import 'package:domic/comic/extractors/dio.dart';
 import 'package:domic/comic/extractors/dto.dart';
@@ -176,9 +178,13 @@ class Wnacg extends Parser {
 
   Future<ComicPageData> comicByTag(String path, int page,
       {int type = 0}) async {
+    List<String> paths = path.split("-").toList();
+    paths.insert(2, page.toString());
+    paths.insert(2, "page");
+
     var resp = await MyDio().getHtml(
       RequestOptions(
-        path: path,
+        path: paths.join("-"),
         baseUrl: domainBase,
         method: "GET",
       ),
@@ -215,5 +221,81 @@ class Wnacg extends Parser {
 
     var maxPage = int.tryParse(maxLenText) ?? 1;
     return ComicPageData(maxPage, list);
+  }
+
+  Future<List<MapEntry<String, String>>> getComicTabs() async {
+    var resp = await MyDio().getHtml(
+      RequestOptions(path: domainBase, method: "GET"),
+    );
+    var content = resp.value?.data.toString();
+    var doc = parse(content);
+    List<MapEntry<String, String>> res = [];
+
+    doc.querySelectorAll("#album_tabs>li").forEach((element) {
+      var child = element.querySelector("#drop")?.querySelector("a") ??
+          element.querySelector("a");
+      var href = child?.attributes["href"] ?? "";
+      var text = trimAllLF(element.querySelector("a")?.text ?? "");
+      res.add(MapEntry(text, href));
+    });
+    return res.sublist(1, res.length - 1);
+  }
+
+  Future<ComicPageData> comicByTab(String path, int page) async {
+    List<String> paths = [];
+    if (path.contains("-")) {
+      paths = path.split("-").toList();
+      paths.insert(2, page.toString());
+      paths.insert(2, "page");
+    } else {
+      paths = path.split(".").toList();
+      paths.insert(1, page.toString());
+      paths.insert(1, "page");
+      paths.insert(1, "index");
+    }
+
+    var resp = await MyDio().getHtml(
+      RequestOptions(
+        path: paths.join("-"),
+        baseUrl: domainBase,
+        method: "GET",
+      ),
+    );
+
+    var content = resp.value?.data.toString() ?? "";
+    var doc = parse(content);
+    List<ComicSimple> list = [];
+    doc.querySelectorAll("div.gallary_wrap>ul").forEach((element) {
+      for (var e in element.children) {
+        var id = e.querySelector("a")?.attributes["href"] ?? "";
+        var title = e.querySelector("a")?.attributes["title"] ?? "";
+        title = trimAllLF(title);
+        var thumb = e.querySelector("img")?.attributes["src"] ?? "";
+        if (thumb.startsWith("//")) {
+          thumb = "http:$thumb";
+        }
+        var updateDate = e.querySelector(".info_col")?.text ?? "";
+        updateDate = updateDate.split("於").last;
+        var source = "wnacg";
+        var sourceName = sourcesName["wnacg"] ?? "";
+        var author = "";
+        var c = ComicSimple(
+            id, title, thumb, author, updateDate, source, sourceName);
+        list.add(c);
+      }
+    });
+
+    var maxLen = 1;
+
+    try {
+      doc
+          .querySelector(".bot_toolbar")
+          ?.querySelectorAll("a")
+          .forEach((element) {
+        maxLen = max(maxLen, int.tryParse(trimAllLF(element.text)) ?? 1);
+      });
+    } catch (e) {}
+
+    return ComicPageData(maxLen, list);
   }
 }

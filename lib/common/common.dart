@@ -101,5 +101,6 @@ class Routes {
     // ConstantString.kuman: myComicTagRoute,
     ConstantString.baozi: myComicTagRoute,
     // ConstantString.jmtt: myComicTagRoute,
+    ConstantString.wnacg: myComicTagRoute,
   };
 }
