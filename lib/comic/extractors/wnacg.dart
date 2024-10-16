@@ -55,7 +55,7 @@ class Wnacg extends Parser {
     // parse chapter
     var maxLenText = "1";
     try {
-      doc.querySelectorAll(".bot_toolbar>.paginator>a").last.text;
+      maxLenText = doc.querySelectorAll(".bot_toolbar>.paginator>a").last.text;
     } catch (e) {}
     var maxLen = int.tryParse(maxLenText) ?? 1;
     List<Chapter> chapters = [];
