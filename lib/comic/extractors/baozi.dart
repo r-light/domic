@@ -9,7 +9,7 @@ class Baozi extends Parser {
   static Baozi? _instance;
   String domainBase = "https://baozimh.org/";
   String searchBase = "https://baozimh.org/";
-  String chapterListBase = "https://api-get.mgsearcher.com/api/manga/get";
+  String chapterListBase = "https://api-get-v3.mgsearcher.com/api/manga/get";
   String chapterImageBase =
       "https://api-get.mgsearcher.com/api/chapter/getinfo";
 
@@ -75,11 +75,13 @@ class Baozi extends Parser {
     List<Chapter> chapters = [];
     var chapterInfoResp = MyDio()
         .getHtml(
-      RequestOptions(
-          path: chapterListBase,
-          method: "GET",
-          queryParameters: {"mid": mid, "mode": "all"},
-          headers: {"Referer": "https://m.baozimh.one/"}),
+      RequestOptions(path: chapterListBase, method: "GET", queryParameters: {
+        "mid": mid,
+        "mode": "all"
+      }, headers: {
+        "Referer": "https://baozimh.org/",
+        "origin": "https://baozimh.org"
+      }),
     )
         .then((r) {
       var map = r.value?.data as Map;
@@ -105,20 +107,32 @@ class Baozi extends Parser {
       thumb = domainBase + thumb;
     }
 
-    var detailList = doc.querySelector("div.block.text-left.mx-auto");
+    var detailList = doc
+        .querySelector("#info")
+        ?.querySelector("div.block.text-left.mx-auto");
 
-    var title = detailList?.querySelector(".gap-unit-xs>h1")?.text ?? "";
-    title = trimAllLF(title);
-
+    var titleAndState = detailList?.querySelector("h1")?.text ?? "";
+    titleAndState = trimAllLF(titleAndState);
+    var title = trimAllLF(titleAndState.split(" ").first);
     var state = ComicState.unknown;
+    var stateDesc = trimAllLF(titleAndState.split(" ").last);
+    if (stateDesc == "完結" || stateDesc == "完结") {
+      state = ComicState.completed;
+    }
+    if (stateDesc == "連載中" || stateDesc == "连载中") {
+      state = ComicState.ongoing;
+    }
 
     var author = detailList?.querySelector("a")?.text ?? "";
 
     var updateDate = "";
     var uploadDate = updateDate;
 
-    var description =
-        doc.querySelector("p.text-medium.line-clamp-4.my-unit-md")?.text ?? "";
+    var description = "";
+    if (detailList != null && detailList.children.length >= 5) {
+      description = detailList.children[4].text;
+    }
+
     description = trimAllLF(description);
 
     await chapterInfoResp;
@@ -131,10 +145,10 @@ class Baozi extends Parser {
   @override
   Future<ComicPageData> comicByName(String name, int page) async {
     var resp = await MyDio().getHtml(RequestOptions(
-      baseUrl: searchBase,
-      path: "/s/$name",
-      method: "GET",
-    ));
+        baseUrl: searchBase,
+        path: "/s/$name",
+        method: "GET",
+        queryParameters: {"page": page}));
     var content = resp.value?.data.toString() ?? "";
     var doc = parse(content);
 
@@ -186,8 +200,11 @@ class Baozi extends Parser {
     var doc = parse(content);
     List<MapEntry<String, String>> res = [];
 
-    doc.querySelector("#dropdown")?.querySelectorAll("li").forEach((element) {
-      var href = element.firstChild?.attributes["href"] ?? "";
+    doc
+        .querySelector("body>main>div>div.homenavtax")
+        ?.querySelectorAll("a")
+        .forEach((element) {
+      var href = element.attributes["href"] ?? "";
       var text = trimAllLF(element.text);
       res.add(MapEntry(text, href));
     });

@@ -38,7 +38,7 @@ class _SettingsActionState extends State<MySettingsAction> {
 class MySetting extends StatelessWidget {
   const MySetting({Key? key}) : super(key: key);
 
-  static List<String> tabs = ["通用", "阅读", "禁漫天堂"];
+  static List<String> tabs = ["通用", "阅读"];
 
   @override
   Widget build(BuildContext context) {
@@ -53,8 +53,7 @@ class MySetting extends StatelessWidget {
             tabs: tabs.map<Widget>((e) => Tab(text: e)).toList(),
           ),
         ),
-        body: const TabBarView(
-            children: [MyGeneralSetting(), MyReadSetting(), MyJmttSetting()]),
+        body: const TabBarView(children: [MyGeneralSetting(), MyReadSetting()]),
       ),
     );
   }

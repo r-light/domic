@@ -95,7 +95,7 @@ class Routes {
   static const String myDownloadRoute = "MyDownload";
   static const routes = {
     // ConstantString.pufei: myComicTagRoute,
-    ConstantString.gufeng: myComicTagRoute,
+    // ConstantString.gufeng: myComicTagRoute,
     // ConstantString.bainian: myComicTagRoute,
     // ConstantString.qiman: myComicTagRoute,
     // ConstantString.kuman: myComicTagRoute,
