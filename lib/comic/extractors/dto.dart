@@ -14,6 +14,7 @@ const sourcesName = {
   "maofly": "漫画猫",
   "kuman": "酷漫屋",
   "baozi": "包子漫画",
+  "xipi": "嬉皮漫画",
   "wnacg": "绅士漫画"
 };
 

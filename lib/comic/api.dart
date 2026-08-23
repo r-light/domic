@@ -1,6 +1,7 @@
 import 'package:domic/comic/extractors/baozi.dart';
 import 'package:domic/comic/extractors/parser_entity.dart';
 import 'package:domic/comic/extractors/wnacg.dart';
+import 'package:domic/comic/extractors/xipi.dart';
 
 final Map<String, Parser> comicMethod = {
   // "pufei": Pufei(),
@@ -11,6 +12,7 @@ final Map<String, Parser> comicMethod = {
   // "maofly": MaoFly(),
   // "kuman": Kuman(),
   "baozi": Baozi(),
+  "xipi": Xipi()
 };
 
 final Map<String, Parser> comic18Method = {

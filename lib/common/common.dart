@@ -23,6 +23,7 @@ class ConstantString {
   static const maofly = "maofly";
   static const kuman = "kuman";
   static const baozi = "baozi";
+  static const xipi = "xipi";
   static const wnacg = "wnacg";
 
   static const pufeiCacheBox = "pufeiCacheLazy";
@@ -34,6 +35,7 @@ class ConstantString {
   static const maoflyCacheBox = "maoflyCacheLazy";
   static const kumanCacheBox = "kumanCacheLazy";
   static const baoziCacheBox = "baoziCacheLazy";
+  static const xipiCacheBox = "xipiCacheBox";
   static const wnacgCacheBox = "wnacgCacheLazy";
 
   static const comic18DownloadBox = "comic18DownloadLazy";
@@ -55,6 +57,7 @@ class ConstantString {
     maoflyCacheBox,
     kumanCacheBox,
     baoziCacheBox,
+    xipiCacheBox,
     wnacgCacheBox
   ];
 
@@ -68,6 +71,7 @@ class ConstantString {
     maofly: maoflyCacheBox,
     kuman: kumanCacheBox,
     baozi: baoziCacheBox,
+    xipi: xipiCacheBox,
     wnacg: wnacgCacheBox
   };
 
@@ -100,6 +104,7 @@ class Routes {
     // ConstantString.qiman: myComicTagRoute,
     // ConstantString.kuman: myComicTagRoute,
     ConstantString.baozi: myComicTagRoute,
+    ConstantString.xipi: myComicTagRoute,
     // ConstantString.jmtt: myComicTagRoute,
     ConstantString.wnacg: myComicTagRoute,
   };
